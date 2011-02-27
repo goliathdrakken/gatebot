@@ -1,0 +1,20 @@
+gatebot - copyright (c) jared szechy 2011
+
+=== OVERVIEW ===
+
+This is the Gatebot software package.  This is a fork of the Kegbot
+project, http://kegbot.org
+
+Complete documentation can eventually be found at the gatebot website.
+
+=== DOCUMENTATION ===
+
+Here's a quick overview of what's inside:
+
+  controller/
+    C source, schematics, and board files for the Gateboard Arduino
+    controller.
+
+  pygate/
+    Python Gatebot package, including the core control system and
+    Django-based web frontend.
