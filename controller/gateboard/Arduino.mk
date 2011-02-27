@@ -1,11 +1,3 @@
-########################################################################
-# Kegbot Notice: This is a copy of the Arduino.mk Makefile for Arduino.
-#       Version: 0.4
-#        Source: http://mjo.tc/atelier/2009/02/arduino-cli.html
-#       License: LGPL v2
-# Local changes: None beyond this this comment block.
-########################################################################
-#
 # Arduino command line tools Makefile
 # System part (i.e. project independent)
 #
