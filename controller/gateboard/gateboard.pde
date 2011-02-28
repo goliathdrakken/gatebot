@@ -27,8 +27,13 @@ SoftwareSerial gSerialLcd = SoftwareSerial(GB_PIN_SERIAL_LCD_RX,
 //
 // Other Globals
 //
+long previousMillis = 0;
+int interval = 3000;
 static bool volatile gRelayStatus[] = {false, false};
 static uint8_t gOutputPins[] = {GB_PIN_RELAY_A, GB_PIN_RELAY_B};
+
+volatile long bit_holder = 0;
+volatile int bit_count = 0;
 
 static GateboardPacket gInputPacket;
 
@@ -91,12 +96,15 @@ static OneWire gOnewireIdBus(GB_PIN_ONEWIRE_PRESENCE);
 
 void DATA0()
 {
-  //;
+  bit_count++;
+  bit_holder = bit_holder << 1;
 }
 
 void DATA1()
 {
-  //;
+  bit_count++;
+  bit_holder = bit_holder << 1;
+  bit_holder |= 1;
 }
 
 //
@@ -134,6 +142,17 @@ void writeAuthPacket(char* device_name, uint8_t* token, int token_len,
   packet.Print();
 }
 
+void clearinterrupts() {
+  for (int i = 2; i < 4; i++) {
+    pinMode(i, OUTPUT);
+    digitalWrite(i, HIGH);
+    digitalWrite(i, LOW);
+    pinMode(i, INPUT);
+    digitalWrite(i, HIGH);
+  }
+  delay(10);
+}
+
 //
 // Main
 //
@@ -143,14 +162,12 @@ void setup()
   memset(&gUptimeStat, 0, sizeof(UptimeStat));
   memset(&gPacketStat, 0, sizeof(RxPacketStat));
 
-  // Wiegand steup. Enable internal weak pullup.
-  pinMode(GB_PIN_DATA_0, INPUT);
-  digitalWrite(GB_PIN_DATA_0, HIGH);
-  attachInterrupt(0, DATA0, RISING);
+  // Wiegand steup.
+  clearinterrupts();
 
-  pinMode(GB_PIN_DATA_1, INPUT);
-  digitalWrite(GB_PIN_DATA_1, HIGH);
+  attachInterrupt(0, DATA0, RISING);
   attachInterrupt(1, DATA1, RISING);
+  delay(10);
 
   pinMode(GB_PIN_RELAY_A, OUTPUT);
   pinMode(GB_PIN_RELAY_B, OUTPUT);
@@ -255,6 +272,20 @@ void stepOnewireIdBus() {
   }
 }
 #endif
+
+void checkWiegand() {
+  if (millis() - previousMillis > interval) {
+    bit_count = 0; bit_holder = 0;
+    previousMillis = millis();
+  }
+  if (bit_count == 26)
+    previousMillis = millis();
+    
+    bit_holder = (bit_holder >> 1) & 0x7fff;
+    writeAuthPacket("rfid", (uint8_t*)&bit_holder, 8, 1);
+    bit_count = 0; bit_holder = 0;
+    delay(10);
+  }
 
 static void readSerialBytes(char *dest_buf, int num_bytes, int offset) {
   while (num_bytes-- != 0) {
@@ -416,6 +447,8 @@ void loop()
 #if GB_ENABLE_ONEWIRE_PRESENCE
   stepOnewireIdBus();
 #endif
+  
+  checkWiegand();
 }
 
 // vim: syntax=c

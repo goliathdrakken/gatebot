@@ -1,5 +1,5 @@
 TARGET = gateboard-v1
-MCU = atmega168
+MCU = atmega328p
 F_CPU = 16000000
 ARDUINO_LIBS = EEPROM SoftwareSerial
 
