@@ -67,116 +67,6 @@ def AuthTokenToProto(record, full=False):
       ret.pin = record.pin
   return ret
 
-@converts(models.Drink)
-def DrinkToProto(drink, full=False):
-  ret = AttrDict()
-  ret.id = drink.seqn
-  ret.ticks = drink.ticks
-  ret.volume_ml = drink.volume_ml
-  ret.session_id = str(drink.session.seqn)
-  ret.pour_time = drink.starttime
-  if drink.duration is not None:
-    ret.duration = drink.duration
-  ret.status = drink.status
-  ret.is_valid = (drink.status == 'valid')
-  if drink.keg:
-    ret.keg_id = drink.keg.seqn
-  if drink.user:
-    ret.user_id = drink.user.username
-  else:
-    ret.user_id = None
-  if drink.auth_token:
-    ret.auth_token = drink.auth_token
-  return ret
-
-@converts(models.Keg)
-def KegToProto(keg, full=False):
-  ret = AttrDict()
-  ret.id = keg.seqn
-  ret.type_id = keg.type.id
-  ret.size_id = keg.size.id
-  ret.size_name = keg.size.name
-  ret.size_volume_ml = keg.size.volume_ml
-  rem = float(keg.remaining_volume())
-  ret.volume_ml_remain = rem
-  ret.percent_full = keg.percent_full()
-  ret.started_time = keg.startdate
-  ret.finished_time = keg.enddate
-  ret.status = keg.status
-  if keg.description:
-    ret.description = keg.description
-  ret.spilled_ml = keg.spilled_ml
-  return ret
-
-@converts(models.KegSize)
-def KegSizeToProto(size, full=False):
-  ret = AttrDict()
-  ret.id = size.id
-  ret.name = size.name
-  ret.volume_ml = size.volume_ml
-  return ret
-
-@converts(models.KegTap)
-def KegTapToProto(tap, full=False):
-  ret = AttrDict()
-  ret.id = str(tap.seqn)
-  ret.name = tap.name
-  ret.meter_name = tap.meter_name
-  ret.ml_per_tick = tap.ml_per_tick
-  if tap.description:
-    ret.description = tap.description
-  if tap.current_keg:
-    ret.current_keg_id = tap.current_keg.seqn
-  if tap.temperature_sensor:
-    ret.thermo_sensor_id = str(tap.temperature_sensor.seqn)
-    log = tap.temperature_sensor.LastLog()
-    if log:
-      ret.last_temperature = ToProto(log)
-  return ret
-
-@converts(models.DrinkingSession)
-def SessionToProto(record, full=False):
-  ret = AttrDict()
-  ret.id = str(record.seqn)
-  ret.start_time = record.starttime
-  ret.end_time = record.endtime
-  ret.volume_ml = record.volume_ml
-  if record.name:
-    ret.name = record.name
-  if record.slug:
-    ret.slug = record.slug
-  return ret
-
-@converts(models.Thermolog)
-def ThermoLogToProto(record, full=False):
-  ret = AttrDict()
-  ret.id = str(record.seqn)
-  ret.sensor_id = str(record.sensor.seqn)
-  ret.temperature_c = record.temp
-  ret.record_time = record.time
-  return ret
-
-@converts(models.ThermoSummaryLog)
-def ThermoSummaryLogToProto(record, full=False):
-  ret = AttrDict()
-  ret.id = str(record.seqn)
-  ret.sensor_id = str(record.sensor.seqn)
-  ret.date = record.date
-  ret.period = record.period
-  ret.num_readings = record.num_readings
-  ret.min_temp = record.min_temp
-  ret.max_temp = record.max_temp
-  ret.mean_temp = record.mean_temp
-  return ret
-
-@converts(models.ThermoSensor)
-def ThermoSensorToProto(record, full=False):
-  ret = AttrDict()
-  ret.id = record.seqn
-  ret.sensor_name = record.raw_name
-  ret.nice_name = record.nice_name
-  return ret
-
 @converts(models.User)
 def UserToProto(user, full=False):
   ret = AttrDict()
@@ -201,18 +91,6 @@ def UserProfileToProto(record, full=False):
   ret.username = record.user.username
   ret.gender = record.gender
   ret.weight = record.weight
-  return ret
-
-@converts(models.SessionChunk)
-def SessionChunkToProto(record, full=False):
-  ret = AttrDict()
-  ret.id = str(record.seqn)
-  ret.session_id = str(record.session.seqn)
-  ret.username = record.user.username
-  ret.keg_id = record.keg.seqn
-  ret.start_time = record.starttime
-  ret.end_time = record.endtime
-  ret.volume_ml = record.volume_ml
   return ret
 
 @converts(models.SystemEvent)

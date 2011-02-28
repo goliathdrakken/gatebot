@@ -131,6 +131,17 @@ def user_post_save(sender, instance, **kwargs):
       defaults=defaults)
 post_save.connect(user_post_save, sender=User)
 
+class Gate(models.Model):
+  """A physical gate"""
+  site = models.ForeignKey(KegbotSite, related_name='gates')
+  seqn = models.PositiveIntegerField(editable=False)
+  name = models.CharField(max_length=128)
+  description = models.TextField(blank=True, null=True)
+
+  def __str__(self):
+    return "%s: %s" % (self.name, self.description)
+
+pre_save.connect(_set_seqn_pre_save, sender=Gate)
 
 class AuthenticationToken(models.Model):
   """A secret token to authenticate a user, optionally pin-protected."""
@@ -253,15 +264,6 @@ class SystemEvent(models.Model):
   user = models.ForeignKey(User, blank=True, null=True,
       related_name='events',
       help_text='User responsible for the event, if any.')
-  drink = models.ForeignKey(Drink, blank=True, null=True,
-      related_name='events',
-      help_text='Drink involved in the event, if any.')
-  keg = models.ForeignKey(Keg, blank=True, null=True,
-      related_name='events',
-      help_text='Keg involved in the event, if any.')
-  session = models.ForeignKey(DrinkingSession, blank=True, null=True,
-      related_name='events',
-      help_text='Session involved in the event, if any.')
 
   def __str__(self):
     if self.kind == 'drink_poured':

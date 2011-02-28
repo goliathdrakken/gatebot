@@ -49,11 +49,9 @@ def set_defaults():
     rec = models.Config(site=site, key=key, value=val)
     rec.save()
 
-  # KegTap defaults
-  main_tap = models.KegTap(site=site, name='Main Tap', meter_name='kegboard.flow0')
-  main_tap.save()
-  secondary_tap = models.KegTap(site=site, name='Second Tap', meter_name='kegboard.flow1')
-  secondary_tap.save()
+  # Gate defaults
+  main_gate = models.Gate(site=site, name='Main Gate', description='The main gate')
+  main_gate.save()
 
   b = backend.KegbotBackend()
 

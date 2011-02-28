@@ -40,7 +40,7 @@ from pygate.core import kbevent
 from pygate.core import kb_app
 from pygate.core import kb_threads
 from pygate.core import manager
-from pygate.core.net import kegnet
+from pygate.core.net import gatenet
 
 FLAGS = gflags.FLAGS
 
@@ -57,7 +57,7 @@ class KegbotEnv(object):
     self._event_hub = kbevent.EventHub()
     self._logger = logging.getLogger('env')
 
-    self._kegnet_server = kegnet.KegnetServer(name='gatenet', kb_env=self,
+    self._kegnet_server = gatenet.KegnetServer(name='gatenet', kb_env=self,
         addr=FLAGS.kb_core_bind_addr)
 
     if FLAGS.web_backend:
@@ -71,25 +71,14 @@ class KegbotEnv(object):
 
     # Build managers
     self._alarm_manager = alarm.AlarmManager()
-    self._tap_manager = manager.TapManager('tap-manager', self._event_hub)
-    self._flow_manager = manager.FlowManager('flow-manager', self._event_hub,
-        self._tap_manager)
     self._authentication_manager = manager.AuthenticationManager('auth-manager',
         self._event_hub, self._flow_manager, self._tap_manager, self._backend)
-    self._drink_manager = manager.DrinkManager('drink-manager', self._event_hub,
-        self._backend)
-    self._thermo_manager = manager.ThermoManager('thermo-manager',
-        self._event_hub, self._backend)
     self._subscription_manager = manager.SubscriptionManager('pubsub',
         self._event_hub, self._kegnet_server)
 
     # Build threads
     self._threads = set()
     self._service_thread = kb_threads.EventHandlerThread(self, 'service-thread')
-    self._service_thread.AddEventHandler(self._tap_manager)
-    self._service_thread.AddEventHandler(self._flow_manager)
-    self._service_thread.AddEventHandler(self._drink_manager)
-    self._service_thread.AddEventHandler(self._thermo_manager)
     self._service_thread.AddEventHandler(self._authentication_manager)
     self._service_thread.AddEventHandler(self._subscription_manager)
 

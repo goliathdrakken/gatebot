@@ -21,7 +21,7 @@
 from pygate.core import importhacks
 from pygate.core import gatebot
 
-__doc__ = kegbot.__doc__
+__doc__ = gatebot.__doc__
 
 if __name__ == '__main__':
   gatebot.KegbotCoreApp.BuildAndRun()

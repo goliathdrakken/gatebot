@@ -61,6 +61,10 @@ class Backend:
     """
     raise NotImplementedError
 
+  def GetAllGates(self):
+    """Returns all currently enabled gates."""
+    raise NotImplementedError
+
   def GetAuthToken(self, auth_device, token_value):
     """Returns an AuthenticationToken instance."""
     raise NotImplementedError
