@@ -1,0 +1,57 @@
+{% extends "page-twocol.html" %}
+{% load kegweblib %}
+
+{% block title %}drink {{ drink.seqn }} by {{ drink.user.username }}{% endblock %}
+
+{% block col-1 %}
+
+<div class="kb-contentbox-head">
+   drink {{ drink.seqn }}{% if drink.user %} by {{ drink.user.username }}{% endif %}
+</div>
+<div class="kb-contentbox">
+   <table class="kb-statstable">
+      <tr>
+         <th>Size</th>
+         <td>{{ drink.Volume.ConvertTo.Ounce|floatformat:2 }} ounces</td>
+      </tr>
+      <tr>
+         <th valign="top">When</th>
+         <td>
+          {% timeago drink.starttime %}<br>
+          (took {{drink.PourDuration.seconds}} second{{drink.PourDuration.seconds|pluralize}} to pour)
+         </td>
+      </tr>
+      {% if drink.keg %}
+      <tr>
+         <th>Keg</th>
+         <td>
+          <a href="{% url keg drink.keg.seqn %}">{{drink.keg.type.name}}</a>
+        </td>
+      </tr>
+      {% endif %}
+
+   </table>
+</div>
+
+{% endblock %}
+
+{% block col-2 %}
+<div class="kb-contentbox-head">
+  this session
+</div>
+<div class="kb-contentbox">
+  {% with drink.GetSession as session %}
+  <table class="kb-statstable">
+  <tr>
+    <th>Drinkers</th>
+    <td>{{session.users.count}}</td>
+  </tr>
+  <tr>
+    <th>Volume</th>
+    <td>{{session.Volume.ConvertTo.Pint|floatformat:1}} pints</td>
+  </tr>
+  </table>
+  {% endwith %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,14 @@
+Metadata-Version: 1.0
+Name: gatebot
+Version: 0.1.0
+Summary: ALGC gate controller software
+Home-page: http://goliathonline.com/
+Author: jared szechy
+Author-email: jared.szechy@gmail.com
+License: UNKNOWN
+Description: This package contains ALGC gate controller and Django
+        frontend package.
+        
+        **Note:** This package is still *experimental* and subject to change.
+        
+Platform: UNKNOWN

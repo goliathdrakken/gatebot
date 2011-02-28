@@ -1,0 +1,86 @@
+{% extends "page-twocol.html" %}
+{% load kegweblib %}
+
+{% block title %}drinker details for {{ drinker.username }}{% endblock %}
+
+{% block pagetitle %}
+  drinker overview: {{ drinker.username }}
+{% endblock %}
+
+{% block col-1 %}
+<div class="kb-contentbox">
+  <div style="float:left;">
+    {% mugshot_box drinker 128 %}
+  </div>
+  <table border="0" class="kb-statstable">
+     <tr>
+       <td valign="top" align="right">
+         <b>Total Sessions</b>
+       </td>
+       <td>
+         {{ drinker.user_session_chunks.all.count }}
+       </td>
+     </tr>
+
+     <tr>
+        <td align="right" valign="top"><b>Total Drinks</b></td>
+        <td align="left">{{ drinker.drinks.valid.count }}</td>
+     </tr>
+
+     {% if drinker.drinks.valid.count %}
+     <tr>
+        <td align="right" valign="top"><b>Last Drink</b></td>
+        <td align="left">
+          {{ drinker.drinks.valid.0.starttime|date:"l, F j, Y" }}<br>
+          <i>({% timeago drinker.drinks.valid.0.starttime%})</i>
+        </td>
+     </tr>
+     {% endif %}
+
+     <tr>
+        <td align="right" valign="top"><b>Total Volume</b></td>
+        <td align="left">
+         {{ stats.total_volume|volume:"ounces"|floatformat:1}} ounces<br>
+         = {{ stats.total_volume|volume:"twelveounces"|floatformat:0}} 12-oz bottles<br>
+         = {{ stats.total_volume|volume:"pints"|floatformat:0}} pints<br>
+         = {{ stats.total_volume|volume:"gallons"|floatformat:1}} gallons<br>
+         = {{ stats.total_volume|volume:"halfbarrels"|floatformat:1}} kegs<br>
+        </td>
+     </tr>
+  </table>
+</div>
+
+{% endblock %}
+
+{% block col-2 %}
+<div class="kb-contentbox-head">
+  stats
+</div>
+<div class="kb-contentbox">
+  <p>
+    <b>total pints, by day of week</b><br>
+    {% chart sessions_weekday drinker 350 100 %}
+  </p>
+
+  <p>
+    <b>all sessions, by pints per session</b><br>
+    {% chart sessions_volume drinker.user_session_chunks.all 350 100 %}
+  </p>
+</div>
+{% endblock %}
+
+{% block extra-content %}
+<div class="kb-main-content">
+  <div class="kb-contentbox-head">
+     all sessions
+  </div>
+  <div class="kb-contentbox">
+    {% comment %} TODO(mikey): Pagniate sessions. {% endcomment %}
+    {% for chunk in user.user_session_chunks.all %}
+      {% with chunk.session as session %}
+        {% include "kegweb/keg-session.html" %}
+      {% endwith %}
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

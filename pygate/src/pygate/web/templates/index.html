@@ -1,0 +1,33 @@
+{% extends "page-twocol.html" %}
+{% load kegweblib %}
+
+{% block title %}main page{% endblock %}
+
+{% block header-text %}
+<div id="kb-main-header-text">
+  {% if kbsite.title %}{{kbsite.title}}{% else %}kegbot beer device{% endif %}
+</div>
+{% endblock %}
+
+{% comment %} Inhibit page title on main page. {% endcomment %}
+{% block header-margin %}{% endblock %}
+
+{% block col-1 %}
+<div class="kb-contentbox">
+  {% for tap in taps %}
+    {% if tap.current_keg %}
+      {% with tap.current_keg as keg %}
+        {% include "kegweb/keg-snapshot.html" %}
+      {% endwith %}
+    {% endif %}
+  {% endfor %}
+</div>
+{% endblock col-1 %}
+
+{% block col-2 %}
+<div class="kb-contentbox">
+  <h1>recent events</h1>
+  <div id="kb-recent-events"> </div>
+</div>
+
+{% endblock col-2 %}

@@ -1,0 +1,129 @@
+{% load kegweblib %}
+{% load humanize %}
+{% if USE_FACEBOOK %}{% load facebook_tags %}{% endif %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>kegbot :: {% block title %}Default Page{% endblock %}</title>
+  <link rel="stylesheet" href="/site_media/style.css" />
+  {% if kbsite %}
+  {% if kbsite.background_image %}
+  <style>
+    body {
+      background-image: url({{kbsite.background_image.url}});
+    }
+  </style>
+  {% endif %}
+  {% endif %}
+
+  <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+  <script type="text/javascript">
+    google.load("jquery", "1");
+    google.load("jqueryui", "1");
+    google.load('visualization', '1', {'packages':['table']});
+  </script>
+  <script type="text/javascript" src="/site_media/js/kegweb.js"></script>
+  <script type="text/javascript" src="/site_media/js/jquery.js"></script>
+  <script type="text/javascript" src="/site_media/js/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="/site_media/js/jquery.timeago.js"></script>
+  <script type="text/javascript">
+    $(document).ready(function() {
+        kegweb.onReady();
+        $("abbr.timeago").timeago();
+    });
+  </script>
+  <script type="text/javascript" src="/site_media/highcharts/js/highcharts.js"></script>
+  {% block kb-extrajs %}{%endblock%}
+</head>
+
+<body>
+
+  <div id="kb-main-page">
+
+    <div id="kb-main-header">
+      <div class="clear"></div>
+
+      {% block header-text %}{% endblock %}
+
+      <div id="kb-main-header-links">
+        <div class="kb-header-link">
+          <a href="/">main</a>
+        </div>
+
+        <div class="kb-header-link">
+          <a href="/kegs">kegs</a>
+        </div>
+
+        <div class="kb-header-link">
+          <a href="/stats">all-time stats</a>
+        </div>
+
+        {% if user.is_authenticated %}
+        <div class="kb-header-link">
+          <a href="/account">account</a>
+        </div>
+
+        {% if user.is_staff %}
+        <div class="kb-header-link">
+          <a href="{% url kegadmin-main %}">keg admin</a>
+        </div>
+        {% endif %}
+
+        <div class="kb-header-link">
+          <a href="{% url auth_logout %}">logout {{user.username}}</a>
+        </div>
+        {% else %}
+        <div class="kb-header-link">
+          <a href="/accounts/login">login</a>
+        </div>
+        {% endif %}
+
+        <div style="clear: both;"> </div>
+      </div>
+    </div>
+
+    {% if messages %}
+    <div id="kb-message-container">
+      {% for message in messages %}
+        <div class="kb-message-box">
+          <div class="kb-message-{{message.tags}}">
+            {{message}}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% block header-margin %}
+    <div id="kb-pagetitle">
+      <h1>{% block pagetitle %}kegbot{% endblock %}</h1>
+    </div>
+    {% endblock %}
+
+    <div id="kb-main-container">
+
+      {% if page_node %}
+      <div class="kb-main-content">
+        {% render_page page_node %}
+      </div>
+      {% endif %}
+
+      <div class="kb-main-content">
+        {% block content %}{% endblock %}
+      </div> <!-- kb-main-content -->
+
+      {% block extra-content %}{% endblock %}
+
+    </div> <!-- kb-main-container -->
+
+    <div id="kb-footer">
+      this is <a href="http://kegbot.org/">kegbot</a>:
+      &copy; 2004-{% now "Y" %} mike wakerly<br>
+      charts by <a href="http://highcharts.com/">highcharts</a>
+    </div>
+
+  </div> <!-- kb-main-page -->
+
+</body>
+

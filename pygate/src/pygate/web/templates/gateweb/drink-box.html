@@ -1,0 +1,20 @@
+{% load kegweblib %}
+<div class="kb-drink-box">
+  <div class="kb-drink-box-mugshot">
+    {% mugshot_box drink.user 48 %}
+  </div>
+  <div class="kb-drink-box-details">
+    <div class="kb-drink-box-details-headline">
+      {% if drink.user %}<a href="{% url drinker drink.user.username %}">{{drink.user.username}}</a> {% else %} guest{% endif %} poured
+      <b>{{ drink.volume_ml|volume:"ounces"|floatformat:2 }} oz</b>
+    </div>
+    <div class="kb-event-box-info">
+      <a href="{% url drink drink.seqn %}">drink {{drink.seqn}}</a>
+      {% if drink.keg %} from <a href="{% url keg drink.keg.seqn %}">{{drink.keg.type.name}}</a>{% endif %}
+    </div>
+  </div>
+  <div class="kb-event-box-dateline">
+    {% timeago drink.starttime %}
+  </div>
+  <div class="clear"></div>
+</div>

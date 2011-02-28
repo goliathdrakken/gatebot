@@ -1,0 +1,5 @@
+include README.txt
+include LICENSE.txt
+include common_settings.py.example
+include gate_master.cfg.example
+recursive-include src/pygate *.html *.css *.js *.png
