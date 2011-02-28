@@ -72,7 +72,7 @@ class KegbotEnv(object):
     # Build managers
     self._alarm_manager = alarm.AlarmManager()
     self._authentication_manager = manager.AuthenticationManager('auth-manager',
-        self._event_hub, self._flow_manager, self._tap_manager, self._backend)
+        self._event_hub, self._backend)
     self._subscription_manager = manager.SubscriptionManager('pubsub',
         self._event_hub, self._kegnet_server)
 
@@ -92,7 +92,7 @@ class KegbotEnv(object):
     self._watchdog_thread = kb_threads.WatchdogThread(self, 'watchdog-thread')
     self.AddThread(self._watchdog_thread)
 
-    for tap in self._backend.GetAllTaps():
+    for tap in self._backend.GetAllGates():
       # TODO: get rid of max_tick_delta parameter entirely
       self._tap_manager.RegisterTap(tap.meter_name, tap.ml_per_tick,
           (1/tap.ml_per_tick*500))

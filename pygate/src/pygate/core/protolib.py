@@ -67,6 +67,15 @@ def AuthTokenToProto(record, full=False):
       ret.pin = record.pin
   return ret
 
+@converts(models.Gate)
+def GateToProto(tap, full=False):
+  ret = AttrDict()
+  ret.id = str(tap.seqn)
+  ret.name = tap.name
+  if tap.description:
+    ret.description = tap.description
+  return ret
+
 @converts(models.User)
 def UserToProto(user, full=False):
   ret = AttrDict()

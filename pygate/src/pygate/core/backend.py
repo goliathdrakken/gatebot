@@ -118,6 +118,9 @@ class KegbotBackend(Backend):
     token.save()
     return protolib.ToProto(token)
 
+  def GetAllGates(self):
+    return protolib.ToProto(list(models.Gate.objects.all()))
+
   def GetAuthToken(self, auth_device, token_value):
 
     # Special case for "core.user" psuedo auth device.
