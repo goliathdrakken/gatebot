@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Kegnet client/server implementation."""
+"""Gatenet client/server implementation."""
 
 # TODO(mikey): need to isolate internal-only events (like QuitEvent) from
 # external ones (like FlowUpdate).
@@ -48,7 +48,7 @@ gflags.DEFINE_string('kb_core_addr', kb_common.KB_CORE_DEFAULT_ADDR,
     'Specify as "<hostname>:<port>".')
 
 gflags.DEFINE_string('kb_core_bind_addr', kb_common.KB_CORE_DEFAULT_ADDR,
-    'Address that the kegnet server should bind to. '
+    'Address that the gatenet server should bind to. '
     'Specify as "<hostname>:<port>".')
 
 gflags.DEFINE_string('tap_name', 'kegboard.flow0',
@@ -58,17 +58,17 @@ MESSAGE_TERMINATOR = '\n\n'
 
 
 class KegnetProtocolHandler(asynchat.async_chat):
-  """A general purpose request handler for the Kegnet protocol.
+  """A general purpose request handler for the Gatenet protocol.
 
   This async_chat subclass can be used for client and server implementations.
-  The handler will call _HandleKegnetMessage on receipt of a complete kegnet
+  The handler will call _HandleGatenetMessage on receipt of a complete gatenet
   message.
   """
   def __init__(self, sock=None):
     asynchat.async_chat.__init__(self, sock)
     self.set_terminator(MESSAGE_TERMINATOR)
     self._ibuffer = cStringIO.StringIO()
-    self._logger = logging.getLogger('kegnet')
+    self._logger = logging.getLogger('gatenet')
     self._in_notifications = Queue.Queue()
     self._lock = threading.Lock()
     self._quit = False
@@ -112,7 +112,7 @@ class KegnetProtocolHandler(asynchat.async_chat):
     asynchat.async_chat.handle_close(self)
     #self._server.ChannelClosed(self)
 
-  ### KegnetProtocolHandler methods
+  ### GatenetProtocolHandler methods
   def HandleNotification(self, message_dict):
     self._logger.debug('Received notification: %s' % message_dict)
     message = kbevent.DecodeEvent(message_dict)
@@ -130,7 +130,7 @@ class KegnetProtocolHandler(asynchat.async_chat):
 
 
 class KegnetServerHandler(KegnetProtocolHandler):
-  """ An asyncore handler for the core kegnet server. """
+  """ An asyncore handler for the core gatenet server. """
   def __init__(self, sock, server):
     KegnetProtocolHandler.__init__(self, sock)
     self._server = server
@@ -281,9 +281,9 @@ class SimpleKegnetClient(KegnetClient):
     pass
 
 
-class KegnetClientThread(util.KegbotThread):
+class KegnetClientThread(util.GatebotThread):
   def __init__(self, name, client):
-    util.KegbotThread.__init__(self, name)
+    util.GatebotThread.__init__(self, name)
     self._client = client
 
   def run(self):
@@ -291,7 +291,7 @@ class KegnetClientThread(util.KegbotThread):
 
 
 class KegnetServer(asyncore.dispatcher):
-  """asyncore server implementation for Kegnet protocol"""
+  """asyncore server implementation for Gatenet protocol"""
   def __init__(self, name, kb_env, addr='', port=0, qsize=5):
     self._name = name
     self._kb_env = kb_env
@@ -349,7 +349,7 @@ class KegnetServer(asyncore.dispatcher):
 
 
 if __name__ == '__main__':
-  server = KegnetServer(name='kegnet', kb_env=None,
+  server = KegnetServer(name='gatenet', kb_env=None,
       addr=FLAGS.kb_core_bind_addr)
 
   print "Start asyncore"

@@ -193,7 +193,7 @@ void setup()
   gSerialLcd.print('\xfe');
   gSerialLcd.print('\x54');
 
-  gSerialLcd.print("Kegbot!");
+  gSerialLcd.print("Gatebot!");
 #endif
 
   writeHelloPacket();
@@ -279,13 +279,17 @@ void checkWiegand() {
     previousMillis = millis();
   }
   if (bit_count == 26)
+  {
     previousMillis = millis();
     
     bit_holder = (bit_holder >> 1) & 0x7fff;
-    writeAuthPacket("rfid", (uint8_t*)&bit_holder, 8, 1);
+    char token[5];
+    itoa(bit_holder, token, 10);
+    writeAuthPacket("rfid", (uint8_t*)token, 5, 1);
     bit_count = 0; bit_holder = 0;
     delay(10);
   }
+}
 
 static void readSerialBytes(char *dest_buf, int num_bytes, int offset) {
   while (num_bytes-- != 0) {

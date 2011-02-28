@@ -46,7 +46,7 @@ from pygate.core import importhacks
 from pygate.core import kb_app
 from pygate.core import kb_common
 from pygate.core import util
-from pygate.core.net import kegnet
+from pygate.core.net import gatenet
 from pygate.hw.gateboard import gateboard
 
 FLAGS = gflags.FLAGS
@@ -67,7 +67,7 @@ gflags.DEFINE_integer('required_firmware_version', 4,
 
 FLAGS.SetDefault('tap_name', kb_common.ALIAS_ALL_TAPS)
 
-class KegboardKegnetClient(kegnet.SimpleKegnetClient):
+class KegboardKegnetClient(gatenet.SimpleKegnetClient):
   pass
 
 class KegboardManagerApp(kb_app.App):
@@ -79,7 +79,7 @@ class KegboardManagerApp(kb_app.App):
 
     self._client = KegboardKegnetClient()
 
-    self._client_thr = kegnet.KegnetClientThread('gatenet', self._client)
+    self._client_thr = gatenet.KegnetClientThread('gatenet', self._client)
     self._AddAppThread(self._client_thr)
 
     self._manager_thr = KegboardManagerThread('gateboard-manager',
@@ -91,11 +91,11 @@ class KegboardManagerApp(kb_app.App):
     self._AddAppThread(self._device_io_thr)
 
 
-class KegboardManagerThread(util.KegbotThread):
+class KegboardManagerThread(util.GatebotThread):
   """Manager of local gateboard devices."""
 
   def __init__(self, name, client):
-    util.KegbotThread.__init__(self, name)
+    util.GatebotThread.__init__(self, name)
     self._client = client
     self._message_queue = Queue.Queue()
 
@@ -123,17 +123,7 @@ class KegboardManagerThread(util.KegbotThread):
     self._logger.info('Exiting main loop.')
 
   def _HandleDeviceMessage(self, device_name, msg):
-    if isinstance(msg, gateboard.MeterStatusMessage):
-      meter_name = self._DeviceName(msg.meter_name)
-      curr_val = msg.meter_reading
-      self._client.SendMeterUpdate(meter_name, curr_val)
-
-    elif isinstance(msg, gateboard.TemperatureReadingMessage):
-      sensor_name = self._DeviceName(msg.sensor_name)
-      sensor_value = msg.sensor_reading
-      self._client.SendThermoUpdate(sensor_name, sensor_value)
-
-    elif isinstance(msg, gateboard.OnewirePresenceMessage):
+    if isinstance(msg, gateboard.OnewirePresenceMessage):
       strval = '%016x' % msg.device_id
       if msg.status == 1:
         self._client.SendAuthTokenAdd(FLAGS.tap_name,
@@ -162,14 +152,14 @@ class KegboardManagerThread(util.KegbotThread):
         self._client.SendAuthTokenRemove(FLAGS.tap_name, device, bytes_le)
 
 
-class KegboardDeviceIoThread(util.KegbotThread):
+class KegboardDeviceIoThread(util.GatebotThread):
   """Manages all device I/O.
 
   This thread continuously reads from attached gateboard devices and passes
   messages to the KegboardManagerThread.
   """
   def __init__(self, name, manager, device_path, device_speed):
-    util.KegbotThread.__init__(self, name)
+    util.GatebotThread.__init__(self, name)
     self._manager = manager
     self._device_path = device_path
     self._device_speed = device_speed
