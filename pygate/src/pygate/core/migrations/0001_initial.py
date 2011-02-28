@@ -37,6 +37,16 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal('core', ['UserProfile'])
 
+        # Adding model 'Gate'
+        db.create_table('core_gate', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('site', self.gf('django.db.models.fields.related.ForeignKey')(related_name='gates', to=orm['core.KegbotSite'])),
+            ('seqn', self.gf('django.db.models.fields.PositiveIntegerField')()),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=128)),
+            ('description', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
+        ))
+        db.send_create_signal('core', ['Gate'])
+
         # Adding model 'AuthenticationToken'
         db.create_table('core_authenticationtoken', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
@@ -130,6 +140,9 @@ class Migration(SchemaMigration):
         # Deleting model 'UserProfile'
         db.delete_table('core_userprofile')
 
+        # Deleting model 'Gate'
+        db.delete_table('core_gate')
+
         # Deleting model 'AuthenticationToken'
         db.delete_table('core_authenticationtoken')
 
@@ -206,6 +219,14 @@ class Migration(SchemaMigration):
             'key': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
             'site': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'configs'", 'to': "orm['core.KegbotSite']"}),
             'value': ('django.db.models.fields.TextField', [], {})
+        },
+        'core.gate': {
+            'Meta': {'object_name': 'Gate'},
+            'description': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
+            'seqn': ('django.db.models.fields.PositiveIntegerField', [], {}),
+            'site': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'taps'", 'to': "orm['core.KegbotSite']"})
         },
         'core.kegbotsite': {
             'Meta': {'object_name': 'KegbotSite'},
