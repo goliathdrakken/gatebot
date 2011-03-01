@@ -46,7 +46,7 @@ AUTH_DEVICE_CAPTIVE = {
 AUTH_DEVICE_MAX_IDLE_SECS = {
   AUTH_MODULE_CORE_ONEWIRE: 120,
   AUTH_MODULE_CONTRIB_PHIDGET_RFID: 20,
-  'default': 10
+  'default': 5
 }
 
 ### Addresses and ports

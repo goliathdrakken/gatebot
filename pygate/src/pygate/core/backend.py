@@ -65,6 +65,11 @@ class Backend:
     """Returns all currently enabled gates."""
     raise NotImplementedError
 
+  def RecordEntry(self, tap_name, username=None, pour_time=None,
+      duration=0, auth_token=None):
+    """Records a new drink with the given parameters."""
+    raise NotImplementedError
+
   def GetAuthToken(self, auth_device, token_value):
     """Returns an AuthenticationToken instance."""
     raise NotImplementedError
@@ -89,6 +94,12 @@ class KegbotBackend(Backend):
       return ret
     except DatabaseError, e:
       raise BackendError, e
+
+  def _GetGateFromName(self, gate_name):
+    try:
+      return models.Gate.objects.get(site=self._site, name=gate_name)
+    except models.Gate.DoesNotExist:
+      return None
 
   def _GetUserObjFromUsername(self, username):
     try:
@@ -120,6 +131,29 @@ class KegbotBackend(Backend):
 
   def GetAllGates(self):
     return protolib.ToProto(list(models.Gate.objects.all()))
+
+  def RecordDrink(self, tap_name, username=None, pour_time=None,
+      duration=0, auth_token=None):
+
+    gate = self._GetGateFromName(gate_name)
+    if not gate:
+      raise BackendError, "Gate unknown"
+
+    user = None
+    if username:
+      user = self._GetUserObjFromUsername(username)
+
+    if not pour_time:
+      pour_time = datetime.datetime.now()
+
+    d = models.Entry(site=self._site, user=user,
+        starttime=pour_time, duration=duration,
+        auth_token=auth_token)
+    d.save()
+    d.PostProcess()
+
+    return protolib.ToProto(d)
+
 
   def GetAuthToken(self, auth_device, token_value):
 
@@ -154,6 +188,15 @@ class WebBackend(Backend):
 
   def CreateAuthToken(self, auth_device, token_value, username=None):
     raise NotImplementedError
+
+  def GetAllGates(self):
+    ts = self._client.GateStatus()
+    return (d['gate'] for d in self._client.GateStatus()['gates'])
+
+  def RecordEntry(self, tap_name, username=None, pour_time=None,
+      duration=0, auth_token=None):
+    return self._client.RecordEntry(gate_name=gate_name, username=username,
+        pour_time=pour_time, duration=duration, auth_token=auth_token)
 
   def GetAuthToken(self, auth_device, token_value):
     try:

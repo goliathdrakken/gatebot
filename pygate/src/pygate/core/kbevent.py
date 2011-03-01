@@ -83,15 +83,13 @@ class LatchUpdate(Event):
   username = EventField()
   start_time = EventField()
   last_activity_time = EventField()
-  ticks = EventField()
-  volume_ml = EventField()
 
 class TapIdleEvent(Event):
   gate_name = EventField()
 
 class DrinkCreatedEvent(Event):
-  flow_id = EventField()
-  drink_id = EventField()
+  latch_id = EventField()
+  entry_id = EventField()
   gate_name = EventField()
   start_time = EventField()
   end_time = EventField()

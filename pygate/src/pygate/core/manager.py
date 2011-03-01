@@ -351,16 +351,18 @@ class EntryManager(Manager):
   def __init__(self, name, event_hub, backend):
     Manager.__init__(self, name, event_hub)
     self._backend = backend
-    self._last_drink = None
+    self._last_entry = None
+    self._logger.debug('EntryManager started')
 
   def GetStatus(self):
     ret = []
-    ret.append('Last entry: %s' % self._last_drink)
+    ret.append('Last entry: %s' % self._last_entry)
     return ret
 
   @EventHandler(kbevent.LatchUpdate)
   def HandleLatchUpdateEvent(self, event):
     """Attempt to save an entry record and derived data for |latch|"""
+    self._logger.debug('Latch update event: latch_id=0x%08x' % event.latch_id)
     if event.state == event.LatchState.COMPLETED:
       self._HandleLatchEnded(event)
 
@@ -371,20 +373,16 @@ class EntryManager(Manager):
     gate_name = event.gate_name
     pour_time = event.last_activity_time
     duration = (event.last_activity_time - event.start_time).seconds
-    latch_id = event.flow_id
+    latch_id = event.latch_id
 
     # TODO: add to latch event
     auth_token = None
-
-    # XXX mikey
-    spilled = False
 
     # Log the entry.  If the username is empty or invalid, the backend will
     # assign it to the default (anonymous) user.  The backend will assign the
     # drink to a keg.
     d = self._backend.RecordEntry(gate_name, username=username,
-        pour_time=pour_time, duration=duration, auth_token=auth_token,
-        spilled=spilled)
+        pour_time=pour_time, duration=duration, auth_token=auth_token)
 
     if not d:
       self._logger.warning('No entry recorded (spillage?).')

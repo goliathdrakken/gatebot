@@ -42,7 +42,7 @@ setup(
       'django-registration',
       'django_extensions',
 
-      'MySQL-python',
+      #'MySQL-python',
       'pylcdui >= 0.5.5',
       'python-gflags >= 1.3',
       'South >= 0.7.3',
