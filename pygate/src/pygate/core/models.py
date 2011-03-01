@@ -60,7 +60,7 @@ def _set_seqn_pre_save(sender, instance, **kwargs):
   instance.seqn = seqn
 
 
-class KegbotSite(models.Model):
+class GatebotSite(models.Model):
   name = models.CharField(max_length=64, unique=True,
       help_text='A short single-word name for this site, eg "default" or "sfo"')
   title = models.CharField(max_length=64, blank=True, null=True,
@@ -133,7 +133,7 @@ post_save.connect(user_post_save, sender=User)
 
 class Gate(models.Model):
   """A physical gate"""
-  site = models.ForeignKey(KegbotSite, related_name='gates')
+  site = models.ForeignKey(GatebotSite, related_name='gates')
   seqn = models.PositiveIntegerField(editable=False)
   name = models.CharField(max_length=128)
   description = models.TextField(blank=True, null=True)
@@ -142,6 +142,57 @@ class Gate(models.Model):
     return "%s: %s" % (self.name, self.description)
 
 pre_save.connect(_set_seqn_pre_save, sender=Gate)
+
+class EntryManager(models.Manager):
+  def valid(self):
+    return self.filter(status='valid')
+
+class Entry(models.Model):
+  """ Table of entry records """
+  class Meta:
+    unique_together = ('site', 'seqn')
+    get_latest_by = 'starttime'
+    ordering = ('-starttime',)
+
+  def PourDuration(self):
+    return self.duration
+
+  def __str__(self):
+    return "Entry %s:%i by %s" % (self.site.name, self.seqn, self.user)
+
+  objects = EntryManager()
+
+  site = models.ForeignKey(GatebotSite, related_name='entries')
+  seqn = models.PositiveIntegerField(editable=False)
+
+  starttime = models.DateTimeField()
+  duration = models.PositiveIntegerField(blank=True, default=0)
+  user = models.ForeignKey(User, null=True, blank=True, related_name='entries')
+  status = models.CharField(max_length=128, choices = (
+     ('valid', 'valid'),
+     ('invalid', 'invalid'),
+     ('deleted', 'deleted'),
+     ), default = 'valid')
+  auth_token = models.CharField(max_length=256, blank=True, null=True)
+
+  def _UpdateSystemStats(self):
+    stats, created = SystemStats.objects.get_or_create(site=self.site)
+    stats.Update(self)
+
+  def _UpdateUserStats(self):
+    if self.user:
+      defaults = {
+        'site': self.site,
+      }
+      stats, created = self.user.stats.get_or_create(defaults=defaults)
+      stats.Update(self)
+
+  def PostProcess(self):
+    self._UpdateSystemStats()
+    self._UpdateUserStats()
+    SystemEvent.ProcessDrink(self)
+
+pre_save.connect(_set_seqn_pre_save, sender=Drink)
 
 class AuthenticationToken(models.Model):
   """A secret token to authenticate a user, optionally pin-protected."""
@@ -156,7 +207,7 @@ class AuthenticationToken(models.Model):
       ret = "[%s] %s" % (self.nice_name, ret)
     return ret
 
-  site = models.ForeignKey(KegbotSite, related_name='tokens')
+  site = models.ForeignKey(GatebotSite, related_name='tokens')
   seqn = models.PositiveIntegerField(editable=False)
   auth_device = models.CharField(max_length=64)
   token_value = models.CharField(max_length=128)
@@ -186,7 +237,7 @@ class RelayLog(models.Model):
   class Meta:
     unique_together = ('site', 'seqn')
 
-  site = models.ForeignKey(KegbotSite, related_name='relaylogs')
+  site = models.ForeignKey(GatebotSite, related_name='relaylogs')
   seqn = models.PositiveIntegerField(editable=False)
   name = models.CharField(max_length=128)
   status = models.CharField(max_length=32)
@@ -199,7 +250,7 @@ class Config(models.Model):
   def __str__(self):
     return '%s=%s' % (self.key, self.value)
 
-  site = models.ForeignKey(KegbotSite, related_name='configs')
+  site = models.ForeignKey(GatebotSite, related_name='configs')
   key = models.CharField(max_length=255, unique=True)
   value = models.TextField()
 
@@ -215,7 +266,7 @@ class _StatsModel(models.Model):
   STATS_BUILDER = None
   class Meta:
     abstract = True
-  site = models.ForeignKey(KegbotSite)
+  site = models.ForeignKey(GatebotSite)
   date = models.DateTimeField(default=datetime.datetime.now)
   stats = fields.JSONField()
 
@@ -256,7 +307,7 @@ class SystemEvent(models.Model):
       ('keg_ended', 'Keg ended'),
   )
 
-  site = models.ForeignKey(KegbotSite, related_name='events')
+  site = models.ForeignKey(GatebotSite, related_name='events')
   seqn = models.PositiveIntegerField(editable=False)
   kind = models.CharField(max_length=255, choices=KINDS,
       help_text='Type of event.')

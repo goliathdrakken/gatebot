@@ -25,7 +25,7 @@ from pygate.core import util
 admin.site.register(models.UserPicture)
 admin.site.register(models.UserProfile)
 
-admin.site.register(models.KegbotSite)
+admin.site.register(models.GatebotSite)
 
 class AuthenticationTokenAdmin(admin.ModelAdmin):
   list_display = ('auth_device', 'user', 'token_value', 'nice_name', 'enabled', 'IsActive')

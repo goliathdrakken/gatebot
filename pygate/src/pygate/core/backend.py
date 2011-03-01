@@ -79,7 +79,7 @@ class KegbotBackend(Backend):
     if site:
       self._site = site
     else:
-      self._site = models.KegbotSite.objects.get(name=sitename)
+      self._site = models.GatebotSite.objects.get(name=sitename)
 
   def _GetConfigDict(self):
     try:

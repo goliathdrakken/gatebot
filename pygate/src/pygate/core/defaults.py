@@ -35,7 +35,7 @@ def set_defaults():
   if db_is_installed():
     raise RuntimeError, "Database is already installed."
 
-  site = models.KegbotSite.objects.create(name='default')
+  site = models.GatebotSite.objects.create(name='default')
 
   # config table defaults
   default_config = (

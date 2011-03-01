@@ -8,15 +8,15 @@ class Migration(SchemaMigration):
 
     def forwards(self, orm):
         
-        # Adding model 'KegbotSite'
-        db.create_table('core_kegbotsite', (
+        # Adding model 'GatebotSite'
+        db.create_table('core_gatebotsite', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=64)),
             ('title', self.gf('django.db.models.fields.CharField')(max_length=64, null=True, blank=True)),
             ('description', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
             ('background_image', self.gf('django.db.models.fields.files.ImageField')(max_length=100, null=True, blank=True)),
         ))
-        db.send_create_signal('core', ['KegbotSite'])
+        db.send_create_signal('core', ['GatebotSite'])
 
         # Adding model 'UserPicture'
         db.create_table('core_userpicture', (
@@ -40,17 +40,33 @@ class Migration(SchemaMigration):
         # Adding model 'Gate'
         db.create_table('core_gate', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('site', self.gf('django.db.models.fields.related.ForeignKey')(related_name='gates', to=orm['core.KegbotSite'])),
+            ('site', self.gf('django.db.models.fields.related.ForeignKey')(related_name='gates', to=orm['core.GatebotSite'])),
             ('seqn', self.gf('django.db.models.fields.PositiveIntegerField')()),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=128)),
             ('description', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
         ))
         db.send_create_signal('core', ['Gate'])
 
+        # Adding model 'Entry'
+        db.create_table('core_entry', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('site', self.gf('django.db.models.fields.related.ForeignKey')(related_name='entries', to=orm['core.GatebotSite'])),
+            ('seqn', self.gf('django.db.models.fields.PositiveIntegerField')()),
+            ('starttime', self.gf('django.db.models.fields.DateTimeField')()),
+            ('duration', self.gf('django.db.models.fields.PositiveIntegerField')(default=0, blank=True)),
+            ('user', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='entries', null=True, to=orm['auth.User'])),
+            ('status', self.gf('django.db.models.fields.CharField')(default='valid', max_length=128)),
+            ('auth_token', self.gf('django.db.models.fields.CharField')(max_length=256, null=True, blank=True)),
+        ))
+        db.send_create_signal('core', ['Entry'])
+
+        # Adding unique constraint on 'Entry', fields ['site', 'seqn']
+        db.create_unique('core_entry', ['site_id', 'seqn'])
+
         # Adding model 'AuthenticationToken'
         db.create_table('core_authenticationtoken', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('site', self.gf('django.db.models.fields.related.ForeignKey')(related_name='tokens', to=orm['core.KegbotSite'])),
+            ('site', self.gf('django.db.models.fields.related.ForeignKey')(related_name='tokens', to=orm['core.GatebotSite'])),
             ('seqn', self.gf('django.db.models.fields.PositiveIntegerField')()),
             ('auth_device', self.gf('django.db.models.fields.CharField')(max_length=64)),
             ('token_value', self.gf('django.db.models.fields.CharField')(max_length=128)),
@@ -69,7 +85,7 @@ class Migration(SchemaMigration):
         # Adding model 'RelayLog'
         db.create_table('core_relaylog', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('site', self.gf('django.db.models.fields.related.ForeignKey')(related_name='relaylogs', to=orm['core.KegbotSite'])),
+            ('site', self.gf('django.db.models.fields.related.ForeignKey')(related_name='relaylogs', to=orm['core.GatebotSite'])),
             ('seqn', self.gf('django.db.models.fields.PositiveIntegerField')()),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=128)),
             ('status', self.gf('django.db.models.fields.CharField')(max_length=32)),
@@ -83,7 +99,7 @@ class Migration(SchemaMigration):
         # Adding model 'Config'
         db.create_table('core_config', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('site', self.gf('django.db.models.fields.related.ForeignKey')(related_name='configs', to=orm['core.KegbotSite'])),
+            ('site', self.gf('django.db.models.fields.related.ForeignKey')(related_name='configs', to=orm['core.GatebotSite'])),
             ('key', self.gf('django.db.models.fields.CharField')(unique=True, max_length=255)),
             ('value', self.gf('django.db.models.fields.TextField')()),
         ))
@@ -92,7 +108,7 @@ class Migration(SchemaMigration):
         # Adding model 'SystemStats'
         db.create_table('core_systemstats', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('site', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.KegbotSite'])),
+            ('site', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.GatebotSite'])),
             ('date', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
             ('stats', self.gf('django.db.models.fields.TextField')(default='{}')),
         ))
@@ -101,7 +117,7 @@ class Migration(SchemaMigration):
         # Adding model 'UserStats'
         db.create_table('core_userstats', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('site', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.KegbotSite'])),
+            ('site', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.GatebotSite'])),
             ('date', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
             ('stats', self.gf('django.db.models.fields.TextField')(default='{}')),
             ('user', self.gf('django.db.models.fields.related.ForeignKey')(related_name='stats', unique=True, to=orm['auth.User'])),
@@ -111,7 +127,7 @@ class Migration(SchemaMigration):
         # Adding model 'SystemEvent'
         db.create_table('core_systemevent', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('site', self.gf('django.db.models.fields.related.ForeignKey')(related_name='events', to=orm['core.KegbotSite'])),
+            ('site', self.gf('django.db.models.fields.related.ForeignKey')(related_name='events', to=orm['core.GatebotSite'])),
             ('seqn', self.gf('django.db.models.fields.PositiveIntegerField')()),
             ('kind', self.gf('django.db.models.fields.CharField')(max_length=255)),
             ('when', self.gf('django.db.models.fields.DateTimeField')()),
@@ -131,8 +147,8 @@ class Migration(SchemaMigration):
         # Removing unique constraint on 'AuthenticationToken', fields ['site', 'seqn', 'auth_device', 'token_value']
         db.delete_unique('core_authenticationtoken', ['site_id', 'seqn', 'auth_device', 'token_value'])
 
-        # Deleting model 'KegbotSite'
-        db.delete_table('core_kegbotsite')
+        # Deleting model 'GatebotSite'
+        db.delete_table('core_gatebotsite')
 
         # Deleting model 'UserPicture'
         db.delete_table('core_userpicture')
@@ -145,6 +161,9 @@ class Migration(SchemaMigration):
 
         # Deleting model 'AuthenticationToken'
         db.delete_table('core_authenticationtoken')
+
+        # Removing unique constraint on 'Entry', fields ['site', 'seqn']
+        db.delete_unique('core_entry', ['site_id', 'seqn'])
 
         # Deleting model 'RelayLog'
         db.delete_table('core_relaylog')
@@ -209,7 +228,7 @@ class Migration(SchemaMigration):
             'nice_name': ('django.db.models.fields.CharField', [], {'max_length': '256', 'null': 'True', 'blank': 'True'}),
             'pin': ('django.db.models.fields.CharField', [], {'max_length': '256', 'null': 'True', 'blank': 'True'}),
             'seqn': ('django.db.models.fields.PositiveIntegerField', [], {}),
-            'site': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'tokens'", 'to': "orm['core.KegbotSite']"}),
+            'site': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'tokens'", 'to': "orm['core.GatebotSite']"}),
             'token_value': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True', 'blank': 'True'})
         },
@@ -217,8 +236,19 @@ class Migration(SchemaMigration):
             'Meta': {'object_name': 'Config'},
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'key': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
-            'site': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'configs'", 'to': "orm['core.KegbotSite']"}),
+            'site': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'configs'", 'to': "orm['core.GatebotSite']"}),
             'value': ('django.db.models.fields.TextField', [], {})
+        },
+        'core.entry': {
+            'Meta': {'ordering': "('-starttime',)", 'unique_together': "(('site', 'seqn'),)", 'object_name': 'Entry'},
+            'auth_token': ('django.db.models.fields.CharField', [], {'max_length': '256', 'null': 'True', 'blank': 'True'}),
+            'duration': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0', 'blank': 'True'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'seqn': ('django.db.models.fields.PositiveIntegerField', [], {}),
+            'site': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'entries'", 'to': "orm['core.GatebotSite']"}),
+            'starttime': ('django.db.models.fields.DateTimeField', [], {}),
+            'status': ('django.db.models.fields.CharField', [], {'default': "'valid'", 'max_length': '128'}),
+            'user': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'entries'", 'null': 'True', 'to': "orm['auth.User']"})
         },
         'core.gate': {
             'Meta': {'object_name': 'Gate'},
@@ -226,10 +256,10 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
             'seqn': ('django.db.models.fields.PositiveIntegerField', [], {}),
-            'site': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'taps'", 'to': "orm['core.KegbotSite']"})
+            'site': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'taps'", 'to': "orm['core.GatebotSite']"})
         },
-        'core.kegbotsite': {
-            'Meta': {'object_name': 'KegbotSite'},
+        'core.gatebotsite': {
+            'Meta': {'object_name': 'GatebotSite'},
             'background_image': ('django.db.models.fields.files.ImageField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
             'description': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -241,7 +271,7 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
             'seqn': ('django.db.models.fields.PositiveIntegerField', [], {}),
-            'site': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'relaylogs'", 'to': "orm['core.KegbotSite']"}),
+            'site': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'relaylogs'", 'to': "orm['core.GatebotSite']"}),
             'status': ('django.db.models.fields.CharField', [], {'max_length': '32'}),
             'time': ('django.db.models.fields.DateTimeField', [], {})
         },
@@ -253,7 +283,7 @@ class Migration(SchemaMigration):
             'kind': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'seqn': ('django.db.models.fields.PositiveIntegerField', [], {}),
             'session': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'events'", 'null': 'True', 'to': "orm['core.DrinkingSession']"}),
-            'site': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'events'", 'to': "orm['core.KegbotSite']"}),
+            'site': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'events'", 'to': "orm['core.GatebotSite']"}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'events'", 'null': 'True', 'to': "orm['auth.User']"}),
             'when': ('django.db.models.fields.DateTimeField', [], {})
         },
@@ -261,7 +291,7 @@ class Migration(SchemaMigration):
             'Meta': {'object_name': 'SystemStats'},
             'date': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'site': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['core.KegbotSite']"}),
+            'site': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['core.GatebotSite']"}),
             'stats': ('django.db.models.fields.TextField', [], {'default': "'{}'"})
         },
         'core.userpicture': {
@@ -283,7 +313,7 @@ class Migration(SchemaMigration):
             'Meta': {'object_name': 'UserStats'},
             'date': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'site': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['core.KegbotSite']"}),
+            'site': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['core.GatebotSite']"}),
             'stats': ('django.db.models.fields.TextField', [], {'default': "'{}'"}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'stats'", 'unique': 'True', 'to': "orm['auth.User']"})
         }

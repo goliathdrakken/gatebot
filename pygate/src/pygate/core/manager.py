@@ -75,13 +75,7 @@ class Gate:
 
 
 class GateManager(Manager):
-  """Maintains listing of available fluid paths.
-
-  This manager maintains the set of available beer taps.  Taps have a
-  one-to-one correspondence with beer taps.  For example, a kegboard controller
-  is capable of reading from two flow sensors; thus, it provides two beer
-  taps.
-  """
+  """Maintains listing of available gates."""
 
   def __init__(self, name, event_hub):
     Manager.__init__(self, name, event_hub)
@@ -93,8 +87,6 @@ class GateManager(Manager):
       meter = gate.GetMeter()
       ret.append('Gate "%s"' % tap.GetName())
       ret.append('  last activity: %s' % (meter.GetLastActivity(),))
-      ret.append('   last reading: %s' % (meter.GetLastReading(),))
-      ret.append('    total ticks: %s' % (meter.GetTicks(),))
       ret.append('')
 
   def GateExists(self, name):
@@ -201,15 +193,15 @@ class Latch:
 
 
 class LatchManager(Manager):
-  """Class reponsible for maintaining and servicing flows.
+  """Class reponsible for maintaining and servicing latches.
 
-  The manager is responsible for creating Flow instances and managing their
-  lifecycle.  It is one layer above the the TapManager, in that it does not
+  The manager is responsible for creating Latch instances and managing their
+  lifecycle.  It is one layer above the the GateManager, in that it does not
   deal with devices directly.
 
-  Flows can be started in multiple ways:
+  Gates can be started in multiple ways:
     - Explicitly, by a call to StartFlow
-    - Implicitly, by a call to HandleTapActivity
+    - Implicitly, by a call to HandleGateActivity
   """
   def __init__(self, name, event_hub, gate_manager):
     Manager.__init__(self, name, event_hub)

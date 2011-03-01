@@ -61,8 +61,8 @@ class Command(BaseCommand):
       raise CommandError('Must give exactly one of: --dump=<filename>, --restore=<filename>')
 
     try:
-      kbsite = models.KegbotSite.objects.get(name=options['site'])
-    except models.KegbotSite.DoesNotExist:
+      kbsite = models.GatebotSite.objects.get(name=options['site'])
+    except models.GatebotSite.DoesNotExist:
       raise CommandError('Site does not exist')
 
     if options['restore']:

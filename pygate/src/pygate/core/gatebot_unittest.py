@@ -31,7 +31,7 @@ class KegbotTestCase(TestCase):
 
     models.Drink.objects.all().delete()
 
-    self.site, _ = models.KegbotSite.objects.get_or_create(name='default')
+    self.site, _ = models.GatebotSite.objects.get_or_create(name='default')
 
     self.keg_size = models.KegSize.objects.create(name='10Liter Keg',
         volume_ml=units.Quantity(10000))
