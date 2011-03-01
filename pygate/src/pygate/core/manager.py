@@ -63,6 +63,71 @@ class Manager:
     """Convenience alias for EventHub.PublishEvent"""
     self._event_hub.PublishEvent(event)
 
+class Gate:
+  def __init__(self, name):
+    self._name = name
+
+  def __str__(self):
+    return self._name
+
+  def GetName(self):
+    return self._name
+
+
+class GateManager(Manager):
+  """Maintains listing of available fluid paths.
+
+  This manager maintains the set of available beer taps.  Taps have a
+  one-to-one correspondence with beer taps.  For example, a kegboard controller
+  is capable of reading from two flow sensors; thus, it provides two beer
+  taps.
+  """
+
+  def __init__(self, name, event_hub):
+    Manager.__init__(self, name, event_hub)
+    self._gates = {}
+
+  def GetStatus(self):
+    ret = []
+    for gate in self.GetAllGates():
+      meter = gate.GetMeter()
+      ret.append('Gate "%s"' % tap.GetName())
+      ret.append('  last activity: %s' % (meter.GetLastActivity(),))
+      ret.append('   last reading: %s' % (meter.GetLastReading(),))
+      ret.append('    total ticks: %s' % (meter.GetTicks(),))
+      ret.append('')
+
+  def GateExists(self, name):
+    return name in self._gates
+
+  def GetAllGates(self):
+    return self._gates.values()
+
+  def _CheckGateExists(self, name):
+    if not self.GateExists(name):
+      raise UnknownTapError
+
+  def RegisterGate(self, name):
+    self._logger.info('Registering new gate: %s' % name)
+    if self.GateExists(name):
+      raise AlreadyRegisteredError
+    self._gates[name] = Gate(name)
+
+  def UnregisterGate(self, name):
+    self._logger.info('Unregistering gate: %s' % name)
+    self._CheckGateExists(name)
+    del self._gates[name]
+
+  def GetGate(self, name):
+    self._CheckGateExists(name)
+    return self._gates[name]
+
+  def UpdateDeviceReading(self, name, value):
+    meter = self.GetGate(name).GetMeter()
+    delta = meter.SetTicks(value)
+    return delta
+
+
 class TokenRecord:
   STATUS_ACTIVE = 'active'
   STATUS_REMOVED = 'removed'
@@ -106,7 +171,7 @@ class TokenRecord:
 
 
 class AuthenticationManager(Manager):
-  def __init__(self, name, event_hub, backend):
+  def __init__(self, name, event_hub, tap_manager, backend):
     Manager.__init__(self, name, event_hub)
     self._backend = backend
     self._tokens = {}  # maps tap name to currently active token
