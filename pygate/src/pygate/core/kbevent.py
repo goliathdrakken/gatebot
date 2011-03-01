@@ -70,14 +70,14 @@ class MeterUpdate(Event):
   tap_name = EventField()
   reading = EventField()
 
-class FlowUpdate(Event):
-  class FlowState:
+class LatchUpdate(Event):
+  class LatchState:
     INITIAL = "initial"
     ACTIVE = "active"
     IDLE = "idle"
     CLOSE_WAIT = "close_wait"
     COMPLETED = "completed"
-  flow_id = EventField()
+  latch_id = EventField()
   tap_name = EventField()
   state = EventField()
   username = EventField()
@@ -110,10 +110,10 @@ class ThermoEvent(Event):
   sensor_name = EventField()
   sensor_value = EventField()
 
-class FlowRequest(Event):
+class LatchRequest(Event):
   class Action:
-    START_FLOW = "start_flow"
-    STOP_FLOW = "stop_flow"
+    START_LATCH = "start_latch"
+    STOP_LATCH = "stop_latch"
     REPORT_STATUS = "report_status"
   tap_name = EventField()
   request = EventField()

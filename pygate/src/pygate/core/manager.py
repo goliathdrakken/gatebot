@@ -127,6 +127,234 @@ class GateManager(Manager):
     delta = meter.SetTicks(value)
     return delta
 
+class Latch:
+  def __init__(self, gate, latch_id, username=None, max_idle_secs=10):
+    self._gate = gate
+    self._latch_id = latch_id
+    self._bound_username = username
+    self._max_idle = datetime.timedelta(seconds=max_idle_secs)
+    self._state = kbevent.FlowUpdate.FlowState.INITIAL
+    self._start_time = datetime.datetime.now()
+    self._end_time = None
+    self._last_log_time = None
+
+  def __str__(self):
+    return '<Flow 0x%08x: gate=%s username=%s max_idle=%s>' % (self._latch_id,
+        self._gate, repr(self._bound_username), self._max_idle)
+
+  def GetUpdateEvent(self):
+    event = kbevent.FlowUpdate()
+    event.latch_id = self._latch_id
+    event.gate_name = self._gate.GetName()
+    event.state = self._state
+
+    # TODO(mikey): username or user_name in the proto, not both
+    if self._bound_username:
+      event.username = self._bound_username
+
+    event.start_time = self._start_time
+    end = self._start_time
+    if self._end_time:
+      end = self._end_time
+    event.last_activity_time = end
+
+    return event
+
+  def GetId(self):
+    return self._latch_id
+
+  def GetState(self):
+    return self._state
+
+  def SetState(self, state):
+    self._state = state
+
+  def SetMaxIdle(self, max_idle_secs):
+    self._max_idle = datetime.timedelta(seconds=max_idle_secs)
+
+  def GetUsername(self):
+    return self._bound_username
+
+  def SetUsername(self, username):
+    self._bound_username = username
+
+  def GetStartTime(self):
+    return self._start_time
+
+  def GetEndTime(self):
+    return self._end_time
+
+  def GetIdleTime(self):
+    end_time = self._end_time
+    if end_time is None:
+      end_time = self._start_time
+    return datetime.datetime.now() - end_time
+
+  def GetMaxIdleTime(self):
+    return self._max_idle
+
+  def GetGate(self):
+    return self._gate
+
+  def IsIdle(self):
+    return self.GetIdleTime() > self.GetMaxIdleTime()
+
+
+class FlowManager(Manager):
+  """Class reponsible for maintaining and servicing flows.
+
+  The manager is responsible for creating Flow instances and managing their
+  lifecycle.  It is one layer above the the TapManager, in that it does not
+  deal with devices directly.
+
+  Flows can be started in multiple ways:
+    - Explicitly, by a call to StartFlow
+    - Implicitly, by a call to HandleTapActivity
+  """
+  def __init__(self, name, event_hub, gate_manager):
+    Manager.__init__(self, name, event_hub)
+    self._gate_manager = gate_manager
+    self._latch_map = {}
+    self._logger = logging.getLogger("latchmanager")
+    self._next_latch_id = int(time.time())
+    self._lock = threading.Lock()
+
+  @util.synchronized
+  def _GetNextLatchId(self):
+    """Returns the next usable flow identifier.
+
+    Flow IDs are simply sequence numbers, used around the core to disambiguate
+    flows."""
+    ret = self._next_latch_id
+    self._next_latch_id += 1
+    return ret
+
+  def GetStatus(self):
+    ret = []
+    active_latches = self.GetActiveLatches()
+    if not active_latches:
+      ret.append('Active latches: None')
+    else:
+      ret.append('Active latches: %i' % len(active_latches))
+      for latch in active_latches:
+        ret.append('  Latch on gate %s' % latch.GetTap())
+        ret.append('         username: %s' % latch.GetUsername())
+        ret.append('       start time: %s' % latch.GetStartTime())
+        ret.append('      last active: %s' % latch.GetEndTime())
+        ret.append('')
+
+    return ret
+
+  def GetActiveLatches(self):
+    return self._latch_map.values()
+
+  def GetLatch(self, gate_name):
+    return self._latch_map.get(gate_name)
+
+  def StartLatch(self, gate_name, username='', max_idle_secs=10):
+    try:
+      gate = self._gate_manager.GetGate(gate_name)
+    except UnknownGateError:
+      return None
+
+    current = self.GetLatch(gate_name)
+    if current and username and current.GetUsername() != username:
+      # There's an existing latch: take it over if anonymous; end it if owned by
+      # another user.
+      if current.GetUsername() == '':
+        self._logger.info('User "%s" is taking over the existing latch' %
+            username)
+        self.SetUsername(current, username)
+      else:
+        self._logger.info('User "%s" is replacing the existing latch' %
+            username)
+        self.StopLatch(gate_name)
+        current = None
+
+    if current and current.GetUsername() == username:
+      # Existing flow owned by this username.  Just poke it.
+      current.SetMaxIdle(max_idle_secs)
+      self._PublishUpdate(current)
+      return current
+    else:
+      # No existing latch; start a new one.
+      new_latch = Latch(gate, latch_id=self._GetNextLatchId(), username=username,
+          max_idle_secs=max_idle_secs)
+      self._latch_map[gate_name] = new_latch
+      self._logger.info('Starting latch: %s' % new_latch)
+      self._PublishUpdate(new_latch)
+      return new_latch
+
+  def SetUsername(self, latch, username):
+    latch.SetUsername(username)
+    self._PublishUpdate(latch)
+
+  def StopLatch(self, gate_name):
+    try:
+      latch = self.GetLatch(gate_name)
+    except UnknownGateError:
+      return None
+    if not latch:
+      return None
+
+    self._logger.info('Stopping latch: %s' % latch)
+    gate = latch.GetGate()
+    del self._latch_map[gate_name]
+    self._StateChange(latch, kbevent.LatchUpdate.LatchState.COMPLETED)
+    return latch
+
+  def UpdateLatch(self, gate_name, meter_reading):
+    try:
+      gate = self._gate_manager.GetGate(gate_name)
+    except GateManagerError:
+      # gate is unknown or not available
+      # TODO(mikey): guard against this happening
+      return None, None
+
+    delta = self._gate_manager.UpdateDeviceReading(gate.GetName(), meter_reading)
+    self._logger.debug('Flow update: tap=%s meter_reading=%i (delta=%i)' %
+        (gate_name, meter_reading, delta))
+
+    if delta == 0:
+      return None, None
+
+    is_new = False
+    latch = self.GetLatch(gate_name)
+    if latch is None:
+      self._logger.debug('Starting flow implicitly due to activity.')
+      latch = self.StartLatch(gate_name)
+      is_new = True
+
+    if latch.GetState() != kbevent.LatchUpdate.LatchState.ACTIVE:
+      self._StateChange(latch, kbevent.LatchUpdate.LatchState.ACTIVE)
+    else:
+      self._PublishUpdate(latch)
+
+    return latch, is_new
+
+  def _StateChange(self, latch, new_state):
+    latch.SetState(new_state)
+    self._PublishUpdate(latch)
+
+  def _PublishUpdate(self, latch):
+    event = latch.GetUpdateEvent()
+    self._PublishEvent(latch)
+
+  @EventHandler(kbevent.HeartbeatSecondEvent)
+  def _HandleHeartbeatEvent(self, event):
+    for latch in self.GetActiveFlows():
+      if latch.IsIdle():
+        self._logger.info('Latch has become too idle, ending: %s' % latch)
+        self._StateChange(latch, kbevent.LatchUpdate.LatchState.IDLE)
+        self.StopLatch(latch.GetGate().GetName())
+
+  @EventHandler(kbevent.LatchRequest)
+  def _HandleLatchRequestEvent(self, event):
+    if event.request == event.Action.START_LATCH:
+      self.StartLatch(event.gate_name)
+    elif event.request == event.Action.STOP_LATCH:
+      self.StopLatch(event.gate_name)
+
 
 class TokenRecord:
   STATUS_ACTIVE = 'active'
@@ -276,6 +504,6 @@ class SubscriptionManager(Manager):
     self._server = server
   @EventHandler(kbevent.CreditAddedEvent)
   @EventHandler(kbevent.DrinkCreatedEvent)
-  @EventHandler(kbevent.FlowUpdate)
+  @EventHandler(kbevent.LatchUpdate)
   def RepostEvent(self, event):
     self._server.SendEventToClients(event)
