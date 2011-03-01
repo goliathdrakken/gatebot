@@ -42,7 +42,7 @@ FLAGS = gflags.FLAGS
 gflags.DEFINE_string('http_addr', '0.0.0.0:9900',
     'Host:port for binding the HTTP server.')
 
-FLAGS.SetDefault('tap_name', kb_common.ALIAS_ALL_TAPS)
+FLAGS.SetDefault('gate_name', kb_common.ALIAS_ALL_GATES)
 
 class ProxyKegnetClient(kegnet.SimpleKegnetClient):
   def __init__(self, addr=None):
@@ -50,7 +50,7 @@ class ProxyKegnetClient(kegnet.SimpleKegnetClient):
     self.flows = {}
 
   def onFlowUpdate(self, event):
-    self.flows[event.tap_name] = event
+    self.flows[event.gate_name] = event
 
 class ProxyServer(HTTPServer):
   def __init__(self, client):
@@ -89,11 +89,11 @@ class ProxyRequestHandler(BaseHTTPRequestHandler):
       username = username[0]
     if self.path == '/add' and username:
       self.server._logger.info('adding: %s' % username)
-      client.SendAuthTokenAdd(FLAGS.tap_name, 'core.user', username)
+      client.SendAuthTokenAdd(FLAGS.gate_name, 'core.user', username)
       result['ok'] = True
     elif self.path == '/remove' and username:
       self.server._logger.info('removing: %s' % username)
-      client.SendAuthTokenRemove(FLAGS.tap_name, 'core.user', username)
+      client.SendAuthTokenRemove(FLAGS.gate_name, 'core.user', username)
       result['ok'] = True
     elif self.path == '/flows':
       result['ok'] = True

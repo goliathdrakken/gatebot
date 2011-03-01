@@ -65,7 +65,7 @@ gflags.DEFINE_integer('required_firmware_version', 4,
     'firmware version, the daemon will refuse to service it.  This '
     'value should probably not be changed.')
 
-FLAGS.SetDefault('tap_name', kb_common.ALIAS_ALL_GATES)
+FLAGS.SetDefault('gate_name', kb_common.ALIAS_ALL_GATES)
 
 class KegboardKegnetClient(gatenet.SimpleKegnetClient):
   pass
@@ -126,10 +126,10 @@ class KegboardManagerThread(util.GatebotThread):
     if isinstance(msg, gateboard.OnewirePresenceMessage):
       strval = '%016x' % msg.device_id
       if msg.status == 1:
-        self._client.SendAuthTokenAdd(FLAGS.tap_name,
+        self._client.SendAuthTokenAdd(FLAGS.gate_name,
             kb_common.AUTH_MODULE_CORE_ONEWIRE, strval)
       else:
-        self._client.SendAuthTokenRemove(FLAGS.tap_name,
+        self._client.SendAuthTokenRemove(FLAGS.gate_name,
             kb_common.AUTH_MODULE_CORE_ONEWIRE, strval)
 
     elif isinstance(msg, gateboard.AuthTokenMessage):
@@ -147,9 +147,9 @@ class KegboardManagerThread(util.GatebotThread):
         bytes_le = '%02x%s' % (ord(b), bytes_le)
 
       if msg.status == 1:
-        self._client.SendAuthTokenAdd(FLAGS.tap_name, device, bytes_le)
+        self._client.SendAuthTokenAdd(FLAGS.gate_name, device, bytes_le)
       else:
-        self._client.SendAuthTokenRemove(FLAGS.tap_name, device, bytes_le)
+        self._client.SendAuthTokenRemove(FLAGS.gate_name, device, bytes_le)
 
 
 class KegboardDeviceIoThread(util.GatebotThread):
