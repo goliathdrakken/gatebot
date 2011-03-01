@@ -23,10 +23,10 @@ class MessageTestCase(unittest.TestCase):
     print m
 
 
-class KegboardReaderTestCase(unittest.TestCase):
+class GateboardReaderTestCase(unittest.TestCase):
   def testBasicUse(self):
     fd = open(CAP_FILE, 'rb')
-    kbr = gateboard.KegboardReader(fd)
+    kbr = gateboard.GateboardReader(fd)
 
     # read the first 8 messages
     messages = []

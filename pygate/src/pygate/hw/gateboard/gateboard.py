@@ -36,22 +36,22 @@ gflags.DEFINE_string('gateboard_device', '/dev/ttyACM1',
     'packets.')
 
 gflags.DEFINE_integer('gateboard_speed', 115200,
-    'Baud rate of device at --kegboard_device')
+    'Baud rate of device at --gateboard_device')
 
 GBSP_PREFIX = "GBSP v1:"
 GBSP_PAYLOAD_MAXLEN = 112
 GBSP_TRAILER = "\r\n"
 
-class KegboardError(Exception):
+class GateboardError(Exception):
   """Generic error with Gateboard"""
 
-class MessageError(KegboardError):
+class MessageError(GateboardError):
   """Generic error in Message class"""
 
 class UnknownMessageError(MessageError):
   """Message id is not known"""
 
-class FramingError(KegboardError):
+class FramingError(GateboardError):
   """Problem synchronizing with serial stream"""
 
 ### Helpers
@@ -273,7 +273,7 @@ def GetMessageById(message_id, payload_bytes=None):
   return cls(payload_bytes=payload_bytes)
 
 
-class KegboardReader(object):
+class GateboardReader(object):
   def __init__(self, fd):
     self._logger = logging.getLogger('gateboard-reader')
     self._fd = fd

@@ -41,7 +41,7 @@ class KegboardMonitorApp(kb_app.App):
   def _SetupSerial(self):
     self._logger.info('Setting up serial port...')
     self._serial_fd = serial.Serial(FLAGS.gateboard_device, FLAGS.gateboard_speed)
-    self._reader = gateboard.KegboardReader(self._serial_fd)
+    self._reader = gateboard.GateboardReader(self._serial_fd)
 
   def _MainLoop(self):
     self._SetupSerial()
