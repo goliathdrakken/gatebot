@@ -192,7 +192,7 @@ class Entry(models.Model):
     self._UpdateUserStats()
     SystemEvent.ProcessDrink(self)
 
-pre_save.connect(_set_seqn_pre_save, sender=Drink)
+pre_save.connect(_set_seqn_pre_save, sender=Entry)
 
 class AuthenticationToken(models.Model):
   """A secret token to authenticate a user, optionally pin-protected."""

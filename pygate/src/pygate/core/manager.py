@@ -347,6 +347,66 @@ class LatchManager(Manager):
     elif event.request == event.Action.STOP_LATCH:
       self.StopLatch(event.gate_name)
 
+class EntryManager(Manager):
+  def __init__(self, name, event_hub, backend):
+    Manager.__init__(self, name, event_hub)
+    self._backend = backend
+    self._last_drink = None
+
+  def GetStatus(self):
+    ret = []
+    ret.append('Last entry: %s' % self._last_drink)
+    return ret
+
+  @EventHandler(kbevent.LatchUpdate)
+  def HandleLatchUpdateEvent(self, event):
+    """Attempt to save an entry record and derived data for |latch|"""
+    if event.state == event.LatchState.COMPLETED:
+      self._HandleLatchEnded(event)
+
+  def _HandleLatchEnded(self, event):
+    self._logger.info('Latch completed: latch_id=0x%08x' % event.latch_id)
+
+    username = event.username
+    gate_name = event.gate_name
+    pour_time = event.last_activity_time
+    duration = (event.last_activity_time - event.start_time).seconds
+    latch_id = event.flow_id
+
+    # TODO: add to latch event
+    auth_token = None
+
+    # XXX mikey
+    spilled = False
+
+    # Log the entry.  If the username is empty or invalid, the backend will
+    # assign it to the default (anonymous) user.  The backend will assign the
+    # drink to a keg.
+    d = self._backend.RecordEntry(gate_name, username=username,
+        pour_time=pour_time, duration=duration, auth_token=auth_token,
+        spilled=spilled)
+
+    if not d:
+      self._logger.warning('No entry recorded (spillage?).')
+      return
+
+    username = d.get('user_id', '<None>')
+
+    self._logger.info('Logged entry %i username=%s' % (
+      d.id, username))
+
+    self._last_entry = d
+
+    # notify listeners
+    created = kbevent.DrinkCreatedEvent()
+    created.latch_id = latch_id
+    created.entry_id = d.id
+    created.gate_name = gate_name
+    created.start_time = d.pour_time
+    created.end_time = d.pour_time
+    if d.user_id:
+      created.username = d.user_id
+    self._PublishEvent(created)
 
 class TokenRecord:
   STATUS_ACTIVE = 'active'

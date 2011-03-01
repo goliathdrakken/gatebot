@@ -76,6 +76,8 @@ class KegbotEnv(object):
         self._gate_manager)
     self._authentication_manager = manager.AuthenticationManager('auth-manager',
         self._event_hub, self._latch_manager, self._gate_manager, self._backend)
+    self._entry_manager = manager.EntryManager('entry-manager', self._event_hub,
+        self._backend)
     self._subscription_manager = manager.SubscriptionManager('pubsub',
         self._event_hub, self._kegnet_server)
 
@@ -84,6 +86,7 @@ class KegbotEnv(object):
     self._service_thread = kb_threads.EventHandlerThread(self, 'service-thread')
     self._service_thread.AddEventHandler(self._gate_manager)
     self._service_thread.AddEventHandler(self._latch_manager)
+    self._service_thread.AddEventHandler(self._entry_manager)
     self._service_thread.AddEventHandler(self._authentication_manager)
     self._service_thread.AddEventHandler(self._subscription_manager)
 
