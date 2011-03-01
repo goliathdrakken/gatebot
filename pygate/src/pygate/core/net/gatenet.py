@@ -51,7 +51,7 @@ gflags.DEFINE_string('kb_core_bind_addr', kb_common.KB_CORE_DEFAULT_ADDR,
     'Address that the gatenet server should bind to. '
     'Specify as "<hostname>:<port>".')
 
-gflags.DEFINE_string('tap_name', 'kegboard.flow0',
+gflags.DEFINE_string('gate_name', 'gateboard.latch0',
     'Default tap name.')
 
 MESSAGE_TERMINATOR = '\n\n'
@@ -203,21 +203,21 @@ class KegnetClient(KegnetProtocolHandler):
     message = kbevent.Ping()
     return self.SendMessage(message)
 
-  def SendMeterUpdate(self, tap_name, meter_reading):
+  def SendMeterUpdate(self, gate_name, meter_reading):
     message = kbevent.MeterUpdate()
-    message.tap_name = tap_name
+    message.gate_name = gate_name
     message.reading = meter_reading
     return self.SendMessage(message)
 
-  def SendFlowStart(self, tap_name):
+  def SendFlowStart(self, gate_name):
     message = kbevent.FlowRequest()
-    message.tap_name = tap_name
+    message.gate_name = gate_name
     message.request = message.Action.START_FLOW
     return self.SendMessage(message)
 
-  def SendFlowStop(self, tap_name):
+  def SendFlowStop(self, gate_name):
     message = kbevent.FlowRequest()
-    message.tap_name = tap_name
+    message.gate_name = gate_name
     message.request = message.Action.STOP_FLOW
     return self.SendMessage(message)
 
@@ -227,17 +227,17 @@ class KegnetClient(KegnetProtocolHandler):
     message.sensor_value = sensor_value
     return self.SendMessage(message)
 
-  def SendAuthTokenAdd(self, tap_name, auth_device_name, token_value):
+  def SendAuthTokenAdd(self, gate_name, auth_device_name, token_value):
     message = kbevent.TokenAuthEvent()
-    message.tap_name = tap_name
+    message.gate_name = gate_name
     message.auth_device_name = auth_device_name
     message.token_value = token_value
     message.status = message.TokenState.ADDED
     return self.SendMessage(message)
 
-  def SendAuthTokenRemove(self, tap_name, auth_device_name, token_value):
+  def SendAuthTokenRemove(self, gate_name, auth_device_name, token_value):
     message = kbevent.TokenAuthEvent()
-    message.tap_name = tap_name
+    message.gate_name = gate_name
     message.auth_device_name = auth_device_name
     message.token_value = token_value
     message.status = message.TokenState.REMOVED

@@ -67,7 +67,7 @@ class StartCompleteEvent(Event):
   pass
 
 class MeterUpdate(Event):
-  tap_name = EventField()
+  gate_name = EventField()
   reading = EventField()
 
 class LatchUpdate(Event):
@@ -78,7 +78,7 @@ class LatchUpdate(Event):
     CLOSE_WAIT = "close_wait"
     COMPLETED = "completed"
   latch_id = EventField()
-  tap_name = EventField()
+  gate_name = EventField()
   state = EventField()
   username = EventField()
   start_time = EventField()
@@ -87,12 +87,12 @@ class LatchUpdate(Event):
   volume_ml = EventField()
 
 class TapIdleEvent(Event):
-  tap_name = EventField()
+  gate_name = EventField()
 
 class DrinkCreatedEvent(Event):
   flow_id = EventField()
   drink_id = EventField()
-  tap_name = EventField()
+  gate_name = EventField()
   start_time = EventField()
   end_time = EventField()
   username = EventField()
@@ -115,7 +115,7 @@ class LatchRequest(Event):
     START_LATCH = "start_latch"
     STOP_LATCH = "stop_latch"
     REPORT_STATUS = "report_status"
-  tap_name = EventField()
+  gate_name = EventField()
   request = EventField()
 
 class HeartbeatSecondEvent(Event):

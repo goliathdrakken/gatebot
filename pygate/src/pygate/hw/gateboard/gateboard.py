@@ -31,7 +31,7 @@ from pygate.hw.gateboard import crc16
 
 FLAGS = gflags.FLAGS
 
-gflags.DEFINE_string('gateboard_device', '/dev/ttyACM0',
+gflags.DEFINE_string('gateboard_device', '/dev/ttyACM1',
     'An explicit device file (eg /dev/ttyACM0) on which to listen for kegboard '
     'packets.')
 

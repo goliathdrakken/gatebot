@@ -133,17 +133,17 @@ class Latch:
     self._latch_id = latch_id
     self._bound_username = username
     self._max_idle = datetime.timedelta(seconds=max_idle_secs)
-    self._state = kbevent.FlowUpdate.FlowState.INITIAL
+    self._state = kbevent.LatchUpdate.LatchState.INITIAL
     self._start_time = datetime.datetime.now()
     self._end_time = None
     self._last_log_time = None
 
   def __str__(self):
-    return '<Flow 0x%08x: gate=%s username=%s max_idle=%s>' % (self._latch_id,
+    return '<Latch 0x%08x: gate=%s username=%s max_idle=%s>' % (self._latch_id,
         self._gate, repr(self._bound_username), self._max_idle)
 
   def GetUpdateEvent(self):
-    event = kbevent.FlowUpdate()
+    event = kbevent.LatchUpdate()
     event.latch_id = self._latch_id
     event.gate_name = self._gate.GetName()
     event.state = self._state
@@ -200,7 +200,7 @@ class Latch:
     return self.GetIdleTime() > self.GetMaxIdleTime()
 
 
-class FlowManager(Manager):
+class LatchManager(Manager):
   """Class reponsible for maintaining and servicing flows.
 
   The manager is responsible for creating Flow instances and managing their
@@ -342,7 +342,7 @@ class FlowManager(Manager):
 
   @EventHandler(kbevent.HeartbeatSecondEvent)
   def _HandleHeartbeatEvent(self, event):
-    for latch in self.GetActiveFlows():
+    for latch in self.GetActiveLatches():
       if latch.IsIdle():
         self._logger.info('Latch has become too idle, ending: %s' % latch)
         self._StateChange(latch, kbevent.LatchUpdate.LatchState.IDLE)
@@ -360,10 +360,10 @@ class TokenRecord:
   STATUS_ACTIVE = 'active'
   STATUS_REMOVED = 'removed'
 
-  def __init__(self, auth_device, token_value, tap_name):
+  def __init__(self, auth_device, token_value, gate_name):
     self.auth_device = auth_device
     self.token_value = token_value
-    self.tap_name = tap_name
+    self.gate_name = gate_name
     self.last_seen = datetime.datetime.now()
     self.status = self.STATUS_ACTIVE
 
@@ -371,7 +371,7 @@ class TokenRecord:
     return '%s=%s@%s' % self.AsTuple()
 
   def AsTuple(self):
-    return (self.auth_device, self.token_value, self.tap_name)
+    return (self.auth_device, self.token_value, self.gate_name)
 
   def SetStatus(self, status):
     self.status = status
@@ -399,8 +399,9 @@ class TokenRecord:
 
 
 class AuthenticationManager(Manager):
-  def __init__(self, name, event_hub, gate_manager, backend):
+  def __init__(self, name, event_hub, latch_manager, gate_manager, backend):
     Manager.__init__(self, name, event_hub)
+    self._latch_manager = latch_manager;
     self._gate_manager = gate_manager
     self._backend = backend
     self._tokens = {}  # maps tap name to currently active token
