@@ -171,25 +171,26 @@ class TokenRecord:
 
 
 class AuthenticationManager(Manager):
-  def __init__(self, name, event_hub, tap_manager, backend):
+  def __init__(self, name, event_hub, gate_manager, backend):
     Manager.__init__(self, name, event_hub)
+    self._gate_manager = gate_manager
     self._backend = backend
     self._tokens = {}  # maps tap name to currently active token
     self._lock = threading.RLock()
 
   @EventHandler(kbevent.TokenAuthEvent)
   def HandleAuthTokenEvent(self, event):
-    for tap in self._GetTapsForTapName(event.tap_name):
+    for gate in self._GetGatesForGateName(event.gate_name):
       record = self._GetRecord(event.auth_device_name, event.token_value,
-          tap.GetName())
+          gate.GetName())
       if event.status == event.TokenState.ADDED:
         self._TokenAdded(record)
       else:
         self._TokenRemoved(record)
 
-  def _GetRecord(self, auth_device, token_value, tap_name):
-    new_rec = TokenRecord(auth_device, token_value, tap_name)
-    existing = self._tokens.get(tap_name)
+  def _GetRecord(self, auth_device, token_value, gate_name):
+    new_rec = TokenRecord(auth_device, token_value, gate_name)
+    existing = self._tokens.get(gate_name)
     if new_rec == existing:
       return existing
     return new_rec
@@ -199,7 +200,7 @@ class AuthenticationManager(Manager):
 
     This will either start or renew a flow on the FlowManager."""
     username = None
-    tap_name = record.tap_name
+    gate_name = record.gate_name
     try:
       token = self._backend.GetAuthToken(record.auth_device, record.token_value)
       username = token.username
@@ -234,7 +235,7 @@ class AuthenticationManager(Manager):
   def _TokenAdded(self, record):
     """Processes a record when a token is added."""
     self._logger.info('Token attached: %s' % record)
-    existing = self._tokens.get(record.tap_name)
+    existing = self._tokens.get(record.gate_name)
 
     if existing == record:
       # Token is already known; nothing to do except update it.
@@ -245,26 +246,26 @@ class AuthenticationManager(Manager):
       self._logger.info('Removing previous token')
       self._TokenRemoved(existing)
 
-    self._tokens[record.tap_name] = record
+    self._tokens[record.gate_name] = record
     self._MaybeStartFlow(record)
 
   @util.synchronized
   def _TokenRemoved(self, record):
     self._logger.info('Token detached: %s' % record)
-    if record != self._tokens.get(record.tap_name):
+    if record != self._tokens.get(record.gate_name):
       self._logger.warning('Token has already been removed')
       return
 
     record.SetStatus(record.STATUS_REMOVED)
-    del self._tokens[record.tap_name]
+    del self._tokens[record.gate_name]
     self._MaybeEndFlow(record)
 
-  def _GetTapsForTapName(self, tap_name):
-    if tap_name == kb_common.ALIAS_ALL_TAPS:
-      return self._tap_manager.GetAllTaps()
+  def _GetGatesForTapName(self, gate_name):
+    if gate_name == kb_common.ALIAS_ALL_GATES:
+      return self._gate_manager.GetAllGates()
     else:
-      if self._tap_manager.TapExists(tap_name):
-        return [self._tap_manager.GetTap(tap_name)]
+      if self._tap_manager.GateExists(gate_name):
+        return [self._gate_manager.GetGate(gate_name)]
       else:
         return []
 

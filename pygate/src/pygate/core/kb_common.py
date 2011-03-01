@@ -17,7 +17,7 @@ DEFAULT_NEW_USER_WEIGHT = 140
 DEFAULT_NEW_USER_GENDER = 'male'
 
 # String name for all taps
-ALIAS_ALL_TAPS = '__all_taps__'
+ALIAS_ALL_GATES = '__all_gates__'
 
 # Device names
 AUTH_MODULE_CORE_ONEWIRE = 'core.onewire'
