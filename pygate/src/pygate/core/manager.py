@@ -442,8 +442,8 @@ class AuthenticationManager(Manager):
     max_idle = kb_common.AUTH_DEVICE_MAX_IDLE_SECS.get(record.auth_device)
     if max_idle is None:
       max_idle = kb_common.AUTH_DEVICE_MAX_IDLE_SECS['default']
-    """self._flow_manager.StartFlow(tap_name, username=username,
-        max_idle_secs=max_idle)"""
+    self._latch_manager.StartLatch(gate_name, username=username,
+        max_idle_secs=max_idle)
 
   def _MaybeEndFlow(self, record):
     """Called when the given token has been removed.
@@ -455,7 +455,7 @@ class AuthenticationManager(Manager):
       is_captive = kb_common.AUTH_DEVICE_CAPTIVE['default']
     if is_captive:
       self._logger.debug('Captive auth device, ending flow immediately.')
-      """self._flow_manager.StopFlow(record.tap_name)"""
+      self._latch_manager.StopLatch(record.gate_name)
     else:
       self._logger.debug('Non-captive auth device, not ending flow.')
 
