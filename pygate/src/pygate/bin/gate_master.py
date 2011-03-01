@@ -18,9 +18,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Master Kegbot process runner.
+"""Master Gatebot process runner.
 
-This program simplifies running multiple Kegbot processes as daemons.
+This program simplifies running multiple Gatebot processes as daemons.
 """
 
 from pygate.core import importhacks
@@ -35,20 +35,20 @@ import signal
 import sys
 import time
 
-from pykeg.core import kb_app
-from pykeg.core import util
+from pygate.core import kb_app
+from pygate.core import util
 
 FLAGS = gflags.FLAGS
 
-gflags.DEFINE_string('master_config', '/etc/algc-gate/master.cfg',
+gflags.DEFINE_string('master_config', '/home/jared/.gatebot/gate_master.cfg',
     'Path to the master config file.')
 
-gflags.DEFINE_string('logfile_dir', '/var/log/algc-gate',
+gflags.DEFINE_string('logfile_dir', '/var/log/gatebot',
     'Default directory for log files.  This value is used as the '
     'default for internal variable `_logfile_dir`.  An application may '
     'override the default by specifying `logfile = /path/to/file`.')
 
-gflags.DEFINE_string('pidfile_dir', '/var/run/algc-gate',
+gflags.DEFINE_string('pidfile_dir', '/var/run/gatebot',
     'Default directory for pid files.  This value is used as the '
     'default for internal variable `_pidfile_dir`.  An application may '
     'override the default by specifying `pidfile = /path/to/file`.')

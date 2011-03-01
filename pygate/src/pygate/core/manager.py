@@ -260,11 +260,11 @@ class AuthenticationManager(Manager):
     del self._tokens[record.gate_name]
     self._MaybeEndFlow(record)
 
-  def _GetGatesForTapName(self, gate_name):
+  def _GetGatesForGateName(self, gate_name):
     if gate_name == kb_common.ALIAS_ALL_GATES:
       return self._gate_manager.GetAllGates()
     else:
-      if self._tap_manager.GateExists(gate_name):
+      if self._gate_manager.GateExists(gate_name):
         return [self._gate_manager.GetGate(gate_name)]
       else:
         return []

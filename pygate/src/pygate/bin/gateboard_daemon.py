@@ -65,7 +65,7 @@ gflags.DEFINE_integer('required_firmware_version', 4,
     'firmware version, the daemon will refuse to service it.  This '
     'value should probably not be changed.')
 
-FLAGS.SetDefault('tap_name', kb_common.ALIAS_ALL_TAPS)
+FLAGS.SetDefault('tap_name', kb_common.ALIAS_ALL_GATES)
 
 class KegboardKegnetClient(gatenet.SimpleKegnetClient):
   pass

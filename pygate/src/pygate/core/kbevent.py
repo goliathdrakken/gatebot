@@ -101,7 +101,7 @@ class TokenAuthEvent(Event):
   class TokenState:
     ADDED = "added"
     REMOVED = "removed"
-  tap_name = EventField()
+  gate_name = EventField()
   auth_device_name = EventField()
   token_value = EventField()
   status = EventField()
