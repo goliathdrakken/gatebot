@@ -514,13 +514,8 @@ class AuthenticationManager(Manager):
     self._logger.info('Token attached: %s' % record)
     existing = self._tokens.get(record.gate_name)
 
-    if existing == record:
-      # Token is already known; nothing to do except update it.
-      record.UpdateLastSeen()
-      return
-
     if existing:
-      self._logger.info('Removing previous token')
+      self._logger.info	('Removing previous token')
       self._TokenRemoved(existing)
 
     self._tokens[record.gate_name] = record
