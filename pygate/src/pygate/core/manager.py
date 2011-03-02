@@ -85,7 +85,7 @@ class GateManager(Manager):
     ret = []
     for gate in self.GetAllGates():
       meter = gate.GetMeter()
-      ret.append('Gate "%s"' % tap.GetName())
+      ret.append('Gate "%s"' % gate.GetName())
       ret.append('  last activity: %s' % (meter.GetLastActivity(),))
       ret.append('')
 
@@ -97,7 +97,7 @@ class GateManager(Manager):
 
   def _CheckGateExists(self, name):
     if not self.GateExists(name):
-      raise UnknownTapError
+      raise UnknownGateError
 
   def RegisterGate(self, name):
     self._logger.info('Registering new gate: %s' % name)
@@ -115,7 +115,7 @@ class GateManager(Manager):
     return self._gates[name]
 
   def UpdateDeviceReading(self, name, value):
-    meter = self.GetGate(name)
+    meter = self.GetGate(name).GetMeter()
     delta = meter.SetTicks(value)
     return delta
 
@@ -229,7 +229,7 @@ class LatchManager(Manager):
     else:
       ret.append('Active latches: %i' % len(active_latches))
       for latch in active_latches:
-        ret.append('  Latch on gate %s' % latch.GetTap())
+        ret.append('  Latch on gate %s' % latch.GetGate())
         ret.append('         username: %s' % latch.GetUsername())
         ret.append('       start time: %s' % latch.GetStartTime())
         ret.append('      last active: %s' % latch.GetEndTime())
@@ -306,7 +306,7 @@ class LatchManager(Manager):
 
     """delta = self._gate_manager.UpdateDeviceReading(gate.GetName(), meter_reading)"""
     delta = meter_reading
-    self._logger.debug('Latch update: tap=%s meter_reading=%i (delta=%i)' %
+    self._logger.debug('Latch update: gate=%s meter_reading=%i (delta=%i)' %
         (gate_name, meter_reading, delta))
 
     if delta == 0:
@@ -452,7 +452,7 @@ class AuthenticationManager(Manager):
     self._latch_manager = latch_manager;
     self._gate_manager = gate_manager
     self._backend = backend
-    self._tokens = {}  # maps tap name to currently active token
+    self._tokens = {}  # maps gate name to currently active token
     self._lock = threading.RLock()
 
   @EventHandler(kbevent.TokenAuthEvent)

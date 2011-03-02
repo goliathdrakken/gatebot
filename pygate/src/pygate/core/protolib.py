@@ -68,12 +68,12 @@ def AuthTokenToProto(record, full=False):
   return ret
 
 @converts(models.Gate)
-def GateToProto(tap, full=False):
+def GateToProto(gate, full=False):
   ret = AttrDict()
-  ret.id = str(tap.seqn)
-  ret.name = tap.name
-  if tap.description:
-    ret.description = tap.description
+  ret.id = str(gate.seqn)
+  ret.name = gate.name
+  if gate.description:
+    ret.description = gate.description
   return ret
 
 @converts(models.User)

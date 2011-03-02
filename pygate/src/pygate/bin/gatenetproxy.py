@@ -47,10 +47,10 @@ FLAGS.SetDefault('gate_name', kb_common.ALIAS_ALL_GATES)
 class ProxyGatenetClient(gatenet.SimpleGatenetClient):
   def __init__(self, addr=None):
     gatenet.SimpleGatenetClient.__init__(self, addr)
-    self.flows = {}
+    self.latches = {}
 
-  def onFlowUpdate(self, event):
-    self.flows[event.gate_name] = event
+  def onLatchUpdate(self, event):
+    self.latches[event.gate_name] = event
 
 class ProxyServer(HTTPServer):
   def __init__(self, client):
@@ -95,10 +95,10 @@ class ProxyRequestHandler(BaseHTTPRequestHandler):
       self.server._logger.info('removing: %s' % username)
       client.SendAuthTokenRemove(FLAGS.gate_name, 'core.user', username)
       result['ok'] = True
-    elif self.path == '/flows':
+    elif self.path == '/latches':
       result['ok'] = True
-      flow_dict = dict((k, v.ToDict()['data']) for k, v in self.server.client.flows.iteritems())
-      result['flows'] = flow_dict
+      flow_dict = dict((k, v.ToDict()['data']) for k, v in self.server.client.latches.iteritems())
+      result['latches'] = flow_dict
     elif self.path == '/status':
       result['ok'] = True
     return self._DoResponse(body=kbjson.dumps(result), type="application/json")
