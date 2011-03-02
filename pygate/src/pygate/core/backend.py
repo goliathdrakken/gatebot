@@ -67,7 +67,7 @@ class Backend:
 
   def RecordEntry(self, tap_name, username=None, pour_time=None,
       duration=0, auth_token=None):
-    """Records a new drink with the given parameters."""
+    """Records a new entry with the given parameters."""
     raise NotImplementedError
 
   def GetAuthToken(self, auth_device, token_value):
@@ -132,7 +132,7 @@ class GatebotBackend(Backend):
   def GetAllGates(self):
     return protolib.ToProto(list(models.Gate.objects.all()))
 
-  def RecordDrink(self, tap_name, username=None, pour_time=None,
+  def RecordEntry(self, tap_name, username=None, pour_time=None,
       duration=0, auth_token=None):
 
     gate = self._GetGateFromName(gate_name)

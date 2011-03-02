@@ -200,7 +200,7 @@ class LatchManager(Manager):
   deal with devices directly.
 
   Gates can be started in multiple ways:
-    - Explicitly, by a call to StartFlow
+    - Explicitly, by a call to OpenLatch
     - Implicitly, by a call to HandleGateActivity
   """
   def __init__(self, name, event_hub, gate_manager):
@@ -213,10 +213,10 @@ class LatchManager(Manager):
 
   @util.synchronized
   def _GetNextLatchId(self):
-    """Returns the next usable flow identifier.
+    """Returns the next usable latch identifier.
 
-    Flow IDs are simply sequence numbers, used around the core to disambiguate
-    flows."""
+    Latch IDs are simply sequence numbers, used around the core to disambiguate
+    latches."""
     ret = self._next_latch_id
     self._next_latch_id += 1
     return ret
@@ -264,7 +264,7 @@ class LatchManager(Manager):
         current = None
 
     if current and current.GetUsername() == username:
-      # Existing flow owned by this username.  Just poke it.
+      # Existing latch owned by this username.  Just poke it.
       current.SetMaxIdle(max_idle_secs)
       self._PublishUpdate(current)
       return current
@@ -304,7 +304,7 @@ class LatchManager(Manager):
       return None, None
 
     delta = self._gate_manager.UpdateDeviceReading(gate.GetName(), meter_reading)
-    self._logger.debug('Flow update: tap=%s meter_reading=%i (delta=%i)' %
+    self._logger.debug('Latch update: tap=%s meter_reading=%i (delta=%i)' %
         (gate_name, meter_reading, delta))
 
     if delta == 0:
@@ -313,7 +313,7 @@ class LatchManager(Manager):
     is_new = False
     latch = self.GetLatch(gate_name)
     if latch is None:
-      self._logger.debug('Starting flow implicitly due to activity.')
+      self._logger.debug('Starting latch implicitly due to activity.')
       latch = self.StartLatch(gate_name)
       is_new = True
 
@@ -396,7 +396,7 @@ class EntryManager(Manager):
     self._last_entry = d
 
     # notify listeners
-    created = kbevent.DrinkCreatedEvent()
+    created = kbevent.EntryCreatedEvent()
     created.latch_id = latch_id
     created.entry_id = d.id
     created.gate_name = gate_name
@@ -474,10 +474,10 @@ class AuthenticationManager(Manager):
       return existing
     return new_rec
 
-  def _MaybeStartFlow(self, record):
+  def _MaybeOpenLatch(self, record):
     """Called when the given token has been added.
 
-    This will either start or renew a flow on the FlowManager."""
+    This will either start or renew a latch on the LatchManager."""
     username = None
     gate_name = record.gate_name
     try:
@@ -496,19 +496,19 @@ class AuthenticationManager(Manager):
     self._latch_manager.StartLatch(gate_name, username=username,
         max_idle_secs=max_idle)
 
-  def _MaybeEndFlow(self, record):
+  def _MaybeCloseLatch(self, record):
     """Called when the given token has been removed.
 
     If the auth device is a captive auth device, then this will forcibly end the
-    flow.  Otherwise, this is a no-op."""
+    latch.  Otherwise, this is a no-op."""
     is_captive = kb_common.AUTH_DEVICE_CAPTIVE.get(record.auth_device)
     if is_captive is None:
       is_captive = kb_common.AUTH_DEVICE_CAPTIVE['default']
     if is_captive:
-      self._logger.debug('Captive auth device, ending flow immediately.')
+      self._logger.debug('Captive auth device, ending latch immediately.')
       self._latch_manager.StopLatch(record.gate_name)
     else:
-      self._logger.debug('Non-captive auth device, not ending flow.')
+      self._logger.debug('Non-captive auth device, not ending latch.')
 
   @util.synchronized
   def _TokenAdded(self, record):
@@ -526,7 +526,7 @@ class AuthenticationManager(Manager):
       self._TokenRemoved(existing)
 
     self._tokens[record.gate_name] = record
-    self._MaybeStartFlow(record)
+    self._MaybeOpenLatch(record)
 
   @util.synchronized
   def _TokenRemoved(self, record):
@@ -537,7 +537,7 @@ class AuthenticationManager(Manager):
 
     record.SetStatus(record.STATUS_REMOVED)
     del self._tokens[record.gate_name]
-    self._MaybeEndFlow(record)
+    self._MaybeCloseLatch(record)
 
   def _GetGatesForGateName(self, gate_name):
     if gate_name == kb_common.ALIAS_ALL_GATES:
