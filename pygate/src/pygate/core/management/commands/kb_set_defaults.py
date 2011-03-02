@@ -4,7 +4,7 @@ from django.core.management.base import CommandError
 from pygate.core import defaults
 
 class Command(BaseCommand):
-  help = u'Set defaults in a new kegbot database.'
+  help = u'Set defaults in a new gatebot database.'
   args = '<none>'
 
   def handle(self, *args, **options):
