@@ -2,25 +2,25 @@
 #
 # Copyright 2010 Mike Wakerly <opensource@hoho.com>
 #
-# This file is part of the Pykeg package of the Kegbot project.
-# For more information on Pykeg or Kegbot, see http://kegbot.org/
+# This file is part of the Pygate package of the Gatebot project.
+# For more information on Pygate or Gatebot, see http://gatebot.org/
 #
-# Pykeg is free software: you can redistribute it and/or modify
+# Pygate is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 2 of the License, or
 # (at your option) any later version.
 #
-# Pykeg is distributed in the hope that it will be useful,
+# Pygate is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
+# along with Pygate.  If not, see <http://www.gnu.org/licenses/>.
 
-"""A simple HTTP server that proxies informaton to and from Kegnet."""
+"""A simple HTTP server that proxies informaton to and from Gatenet."""
 
-from pykeg.core import importhacks
+from pygate.core import importhacks
 
 import cgi
 import httplib
@@ -44,9 +44,9 @@ gflags.DEFINE_string('http_addr', '0.0.0.0:9900',
 
 FLAGS.SetDefault('gate_name', kb_common.ALIAS_ALL_GATES)
 
-class ProxyKegnetClient(kegnet.SimpleKegnetClient):
+class ProxyGatenetClient(gatenet.SimpleGatenetClient):
   def __init__(self, addr=None):
-    kegnet.SimpleKegnetClient.__init__(self, addr)
+    gatenet.SimpleGatenetClient.__init__(self, addr)
     self.flows = {}
 
   def onFlowUpdate(self, event):
@@ -113,9 +113,9 @@ class ProxyRequestHandler(BaseHTTPRequestHandler):
     self.wfile.write(body)
 
 
-class HttpThread(util.KegbotThread):
+class HttpThread(util.GatebotThread):
   def __init__(self, client):
-    util.KegbotThread.__init__(self, 'proxy-http-thr')
+    util.GatebotThread.__init__(self, 'proxy-http-thr')
     self.http_server = ProxyServer(client)
 
   def ThreadMain(self):
@@ -126,10 +126,10 @@ class ProxyApp(kb_app.App):
   def _Setup(self):
     kb_app.App._Setup(self)
 
-    self._logger.info('Setting up kegnet client ...')
+    self._logger.info('Setting up gatenet client ...')
 
-    self._client = ProxyKegnetClient()
-    self._client_thr = kegnet.KegnetClientThread('kegnet', self._client)
+    self._client = ProxyGatenetClient()
+    self._client_thr = gatenet.GatenetClientThread('gatenet', self._client)
     self._AddAppThread(self._client_thr)
 
     self._http_thread = HttpThread(self._client)

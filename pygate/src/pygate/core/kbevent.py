@@ -84,7 +84,7 @@ class LatchUpdate(Event):
   start_time = EventField()
   last_activity_time = EventField()
 
-class TapIdleEvent(Event):
+class GateIdleEvent(Event):
   gate_name = EventField()
 
 class EntryCreatedEvent(Event):
@@ -110,8 +110,8 @@ class ThermoEvent(Event):
 
 class LatchRequest(Event):
   class Action:
-    START_LATCH = "start_latch"
-    STOP_LATCH = "stop_latch"
+    OPEN_LATCH = "open_latch"
+    CLOSE_LATCH = "close_latch"
     REPORT_STATUS = "report_status"
   gate_name = EventField()
   request = EventField()
@@ -124,10 +124,6 @@ class HeartbeatMinuteEvent(Event):
 
 class HeartbeatHourEvent(Event):
   pass
-
-class CreditAddedEvent(Event):
-  amount = EventField()
-  username = EventField()
 
 EVENT_NAME_TO_CLASS = {}
 for cls in Event.__subclasses__():

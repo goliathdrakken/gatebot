@@ -115,7 +115,7 @@ class GateManager(Manager):
     return self._gates[name]
 
   def UpdateDeviceReading(self, name, value):
-    meter = self.GetGate(name).GetMeter()
+    meter = self.GetGate(name)
     delta = meter.SetTicks(value)
     return delta
 
@@ -243,7 +243,7 @@ class LatchManager(Manager):
   def GetLatch(self, gate_name):
     return self._latch_map.get(gate_name)
 
-  def StartLatch(self, gate_name, username='', max_idle_secs=10):
+  def OpenLatch(self, gate_name, username='', max_idle_secs=10):
     try:
       gate = self._gate_manager.GetGate(gate_name)
     except UnknownGateError:
@@ -260,7 +260,7 @@ class LatchManager(Manager):
       else:
         self._logger.info('User "%s" is replacing the existing latch' %
             username)
-        self.StopLatch(gate_name)
+        self.CloseLatch(gate_name)
         current = None
 
     if current and current.GetUsername() == username:
@@ -273,15 +273,16 @@ class LatchManager(Manager):
       new_latch = Latch(gate, latch_id=self._GetNextLatchId(), username=username,
           max_idle_secs=max_idle_secs)
       self._latch_map[gate_name] = new_latch
-      self._logger.info('Starting latch: %s' % new_latch)
+      self._logger.info('Opening latch: %s' % new_latch)
       self._PublishUpdate(new_latch)
+      """self.UpdateLatch(gate_name, 10)"""
       return new_latch
 
   def SetUsername(self, latch, username):
     latch.SetUsername(username)
     self._PublishUpdate(latch)
 
-  def StopLatch(self, gate_name):
+  def CloseLatch(self, gate_name):
     try:
       latch = self.GetLatch(gate_name)
     except UnknownGateError:
@@ -289,7 +290,7 @@ class LatchManager(Manager):
     if not latch:
       return None
 
-    self._logger.info('Stopping latch: %s' % latch)
+    self._logger.info('Closing latch: %s' % latch)
     gate = latch.GetGate()
     del self._latch_map[gate_name]
     self._StateChange(latch, kbevent.LatchUpdate.LatchState.COMPLETED)
@@ -303,7 +304,8 @@ class LatchManager(Manager):
       # TODO(mikey): guard against this happening
       return None, None
 
-    delta = self._gate_manager.UpdateDeviceReading(gate.GetName(), meter_reading)
+    """delta = self._gate_manager.UpdateDeviceReading(gate.GetName(), meter_reading)"""
+    delta = meter_reading
     self._logger.debug('Latch update: tap=%s meter_reading=%i (delta=%i)' %
         (gate_name, meter_reading, delta))
 
@@ -312,10 +314,6 @@ class LatchManager(Manager):
 
     is_new = False
     latch = self.GetLatch(gate_name)
-    if latch is None:
-      self._logger.debug('Starting latch implicitly due to activity.')
-      latch = self.StartLatch(gate_name)
-      is_new = True
 
     if latch.GetState() != kbevent.LatchUpdate.LatchState.ACTIVE:
       self._StateChange(latch, kbevent.LatchUpdate.LatchState.ACTIVE)
@@ -338,14 +336,14 @@ class LatchManager(Manager):
       if latch.IsIdle():
         self._logger.info('Latch has become too idle, ending: %s' % latch)
         self._StateChange(latch, kbevent.LatchUpdate.LatchState.IDLE)
-        self.StopLatch(latch.GetGate().GetName())
+        self.CloseLatch(latch.GetGate().GetName())
 
   @EventHandler(kbevent.LatchRequest)
   def _HandleLatchRequestEvent(self, event):
-    if event.request == event.Action.START_LATCH:
-      self.StartLatch(event.gate_name)
-    elif event.request == event.Action.STOP_LATCH:
-      self.StopLatch(event.gate_name)
+    if event.request == event.Action.OPEN_LATCH:
+      self.OpenLatch(event.gate_name)
+    elif event.request == event.Action.CLOSE_LATCH:
+      self.CloseLatch(event.gate_name)
 
 class EntryManager(Manager):
   def __init__(self, name, event_hub, backend):
@@ -493,7 +491,7 @@ class AuthenticationManager(Manager):
     max_idle = kb_common.AUTH_DEVICE_MAX_IDLE_SECS.get(record.auth_device)
     if max_idle is None:
       max_idle = kb_common.AUTH_DEVICE_MAX_IDLE_SECS['default']
-    self._latch_manager.StartLatch(gate_name, username=username,
+    self._latch_manager.OpenLatch(gate_name, username=username,
         max_idle_secs=max_idle)
 
   def _MaybeCloseLatch(self, record):
@@ -506,7 +504,7 @@ class AuthenticationManager(Manager):
       is_captive = kb_common.AUTH_DEVICE_CAPTIVE['default']
     if is_captive:
       self._logger.debug('Captive auth device, ending latch immediately.')
-      self._latch_manager.StopLatch(record.gate_name)
+      self._latch_manager.CloseLatch(record.gate_name)
     else:
       self._logger.debug('Non-captive auth device, not ending latch.')
 
@@ -553,7 +551,6 @@ class SubscriptionManager(Manager):
   def __init__(self, name, event_hub, server):
     Manager.__init__(self, name, event_hub)
     self._server = server
-  @EventHandler(kbevent.CreditAddedEvent)
   @EventHandler(kbevent.EntryCreatedEvent)
   @EventHandler(kbevent.LatchUpdate)
   def RepostEvent(self, event):
