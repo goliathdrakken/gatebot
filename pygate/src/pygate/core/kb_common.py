@@ -10,7 +10,7 @@ DRINK_SESSION_TIME_MINUTES = 90
 # 'concurrent' (see DrinkingSessionGroup table)
 GROUP_SESSION_TIME_MINUTES = 90
 
-# Address the kegnet server should bind to.
+# Address the gatenet server should bind to.
 KB_CORE_DEFAULT_ADDR = 'localhost:9805'
 
 DEFAULT_NEW_USER_WEIGHT = 140

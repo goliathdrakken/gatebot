@@ -41,6 +41,6 @@ class ConfigAdmin(admin.ModelAdmin):
 admin.site.register(models.Config, ConfigAdmin)
 
 class SystemEventAdmin(admin.ModelAdmin):
-  list_display = ('seqn', 'kind', 'when', 'user', 'drink', 'keg', 'session')
+  list_display = ('seqn', 'kind', 'when', 'user', 'entry')
   list_filter = ('kind', 'when')
 admin.site.register(models.SystemEvent, SystemEventAdmin)

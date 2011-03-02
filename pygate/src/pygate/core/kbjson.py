@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Pygate.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Module for common handling of JSON within Kegbot.
+"""Module for common handling of JSON within Gatebot.
 
 This module's 'loads' and 'dumps' implementations add support for encoding
 datetime instances to ISO8601 strings, and decoding them back.

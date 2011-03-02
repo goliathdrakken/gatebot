@@ -60,6 +60,6 @@ def gentestdata():
 
   usernames = ['abe', 'bort', 'charlie']
   users = []
-  b = backend.KegbotBackend()
+  b = backend.GatebotBackend()
   for name in usernames:
     users.append(b.CreateNewUser(name))

@@ -108,12 +108,8 @@ def SystemEventToProto(record, full=False):
   ret.id = record.seqn
   ret.kind = record.kind
   ret.time = record.when
-  if record.drink:
-    ret.drink = record.drink.seqn
-  if record.keg:
-    ret.keg = record.keg.seqn
-  if record.session:
-    ret.session = record.session.seqn
+  if record.entry:
+    ret.entry = record.entry.seqn
   if record.user:
     ret.user = record.user.username
   return ret

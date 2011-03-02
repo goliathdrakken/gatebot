@@ -104,7 +104,7 @@ class App(object):
   def BuildAndRun(cls, name='main'):
     """Convenience class method to create and Start the app."""
     if sys.version_info < (2,4):
-      print>>sys.stderr, 'kegbot requires Python 2.4 or later; aborting'
+      print>>sys.stderr, 'gatebot requires Python 2.4 or later; aborting'
       sys.exit(1)
 
     try:

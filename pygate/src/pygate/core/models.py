@@ -37,7 +37,7 @@ from pygate.core import stats
 from pygate.core import units
 from pygate.core import util
 
-"""Django models definition for the kegbot database."""
+"""Django models definition for the gatebot database."""
 
 def mugshot_file_name(instance, filename):
   rand_salt = random.randrange(0xffff)

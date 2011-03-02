@@ -20,11 +20,11 @@
 
 """Gatebot Core Application.
 
-This is the Kegbot Core application, which runs the main drink recording and
-post-processing loop. There is exactly one instance of a kegbot core per kegbot
+This is the Gatebot Core application, which runs the main entry recording and
+post-processing loop. There is exactly one instance of a gatebot core per gatebot
 system.
 
-For more information, please see the kegbot documentation.
+For more information, please see the gatebot documentation.
 """
 
 import logging
@@ -50,7 +50,7 @@ gflags.DEFINE_boolean('web_backend', False,
 class GatebotEnv(object):
   """ A class that wraps the context of the gatebot core.
 
-  An instance of this class owns all the threads and services used in the kegbot
+  An instance of this class owns all the threads and services used in the gatebot
   core. It is commonly passed around to objects that the core creates.
   """
   def __init__(self):
