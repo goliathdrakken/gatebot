@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Kegbot Core Application.
+"""Gatebot Core Application.
 
 This is the Kegbot Core application, which runs the main drink recording and
 post-processing loop. There is exactly one instance of a kegbot core per kegbot
@@ -47,8 +47,8 @@ FLAGS = gflags.FLAGS
 gflags.DEFINE_boolean('web_backend', False,
     'If true, uses the web backend implementation rather than a database connection.')
 
-class KegbotEnv(object):
-  """ A class that wraps the context of the kegbot core.
+class GatebotEnv(object):
+  """ A class that wraps the context of the gatebot core.
 
   An instance of this class owns all the threads and services used in the kegbot
   core. It is commonly passed around to objects that the core creates.
@@ -57,7 +57,7 @@ class KegbotEnv(object):
     self._event_hub = kbevent.EventHub()
     self._logger = logging.getLogger('env')
 
-    self._kegnet_server = gatenet.KegnetServer(name='gatenet', kb_env=self,
+    self._gatenet_server = gatenet.GatenetServer(name='gatenet', kb_env=self,
         addr=FLAGS.kb_core_bind_addr)
 
     if FLAGS.web_backend:
@@ -67,7 +67,7 @@ class KegbotEnv(object):
     else:
       # Database backend.
       self._logger.info('Using database backend.')
-      self._backend = backend.KegbotBackend()
+      self._backend = backend.GatebotBackend()
 
     # Build managers
     self._alarm_manager = alarm.AlarmManager()
@@ -79,7 +79,7 @@ class KegbotEnv(object):
     self._entry_manager = manager.EntryManager('entry-manager', self._event_hub,
         self._backend)
     self._subscription_manager = manager.SubscriptionManager('pubsub',
-        self._event_hub, self._kegnet_server)
+        self._event_hub, self._gatenet_server)
 
     # Build threads
     self._threads = set()
@@ -118,8 +118,8 @@ class KegbotEnv(object):
   def GetBackend(self):
     return self._backend
 
-  def GetKegnetServer(self):
-    return self._kegnet_server
+  def GetGatenetServer(self):
+    return self._gatenet_server
 
   def GetEventHub(self):
     return self._event_hub
@@ -134,10 +134,10 @@ class KegbotEnv(object):
     return self._threads
 
 
-class KegbotCoreApp(kb_app.App):
+class GatebotCoreApp(kb_app.App):
   def __init__(self, name='core'):
     kb_app.App.__init__(self, name)
-    self._env = KegbotEnv()
+    self._env = GatebotEnv()
 
   def _MainLoop(self):
     event = kbevent.StartCompleteEvent()
@@ -168,6 +168,6 @@ class KegbotCoreApp(kb_app.App):
 
     self._logger.info('Stopping any remaining threads')
     self._StopThreads()
-    self._logger.info('Kegbot stopped.')
+    self._logger.info('Gatebot stopped.')
     self._TeardownLogging()
 

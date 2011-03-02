@@ -18,7 +18,7 @@
 
 """Miscellanous configuration from the database."""
 
-class KegbotConfig:
+class GatebotConfig:
   def __init__(self, configdict):
     self._configdict = configdict
 

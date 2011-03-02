@@ -67,31 +67,31 @@ gflags.DEFINE_integer('required_firmware_version', 4,
 
 FLAGS.SetDefault('gate_name', kb_common.ALIAS_ALL_GATES)
 
-class KegboardKegnetClient(gatenet.SimpleKegnetClient):
+class GateboardGatenetClient(gatenet.SimpleGatenetClient):
   pass
 
-class KegboardManagerApp(kb_app.App):
+class GateboardManagerApp(kb_app.App):
   def __init__(self, name='core'):
     kb_app.App.__init__(self, name)
 
   def _Setup(self):
     kb_app.App._Setup(self)
 
-    self._client = KegboardKegnetClient()
+    self._client = GateboardGatenetClient()
 
-    self._client_thr = gatenet.KegnetClientThread('gatenet', self._client)
+    self._client_thr = gatenet.GatenetClientThread('gatenet', self._client)
     self._AddAppThread(self._client_thr)
 
-    self._manager_thr = KegboardManagerThread('gateboard-manager',
+    self._manager_thr = GateboardManagerThread('gateboard-manager',
         self._client)
     self._AddAppThread(self._manager_thr)
 
-    self._device_io_thr = KegboardDeviceIoThread('device-io', self._manager_thr,
+    self._device_io_thr = GateboardDeviceIoThread('device-io', self._manager_thr,
         FLAGS.gateboard_device, FLAGS.gateboard_speed)
     self._AddAppThread(self._device_io_thr)
 
 
-class KegboardManagerThread(util.GatebotThread):
+class GateboardManagerThread(util.GatebotThread):
   """Manager of local gateboard devices."""
 
   def __init__(self, name, client):
@@ -152,11 +152,11 @@ class KegboardManagerThread(util.GatebotThread):
         self._client.SendAuthTokenRemove(FLAGS.gate_name, device, bytes_le)
 
 
-class KegboardDeviceIoThread(util.GatebotThread):
+class GateboardDeviceIoThread(util.GatebotThread):
   """Manages all device I/O.
 
   This thread continuously reads from attached gateboard devices and passes
-  messages to the KegboardManagerThread.
+  messages to the GateboardManagerThread.
   """
   def __init__(self, name, manager, device_path, device_speed):
     util.GatebotThread.__init__(self, name)
@@ -225,4 +225,4 @@ class KegboardDeviceIoThread(util.GatebotThread):
 
 
 if __name__ == '__main__':
-  KegboardManagerApp.BuildAndRun()
+  GateboardManagerApp.BuildAndRun()

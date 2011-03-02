@@ -9,25 +9,25 @@ class Migration:
     def forwards(self, orm):
         
         # Adding model 'Page'
-        db.create_table('kegweb_page', (
-            ('id', orm['kegweb.Page:id']),
-            ('name', orm['kegweb.Page:name']),
-            ('title', orm['kegweb.Page:title']),
-            ('author', orm['kegweb.Page:author']),
-            ('content', orm['kegweb.Page:content']),
-            ('status', orm['kegweb.Page:status']),
-            ('markup', orm['kegweb.Page:markup']),
-            ('created_on', orm['kegweb.Page:created_on']),
-            ('last_modified', orm['kegweb.Page:last_modified']),
+        db.create_table('gateweb_page', (
+            ('id', orm['gateweb.Page:id']),
+            ('name', orm['gateweb.Page:name']),
+            ('title', orm['gateweb.Page:title']),
+            ('author', orm['gateweb.Page:author']),
+            ('content', orm['gateweb.Page:content']),
+            ('status', orm['gateweb.Page:status']),
+            ('markup', orm['gateweb.Page:markup']),
+            ('created_on', orm['gateweb.Page:created_on']),
+            ('last_modified', orm['gateweb.Page:last_modified']),
         ))
-        db.send_create_signal('kegweb', ['Page'])
+        db.send_create_signal('gateweb', ['Page'])
         
     
     
     def backwards(self, orm):
         
         # Deleting model 'Page'
-        db.delete_table('kegweb_page')
+        db.delete_table('gateweb_page')
         
     
     
@@ -66,7 +66,7 @@ class Migration:
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
-        'kegweb.page': {
+        'gateweb.page': {
             'author': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"}),
             'content': ('django.db.models.fields.TextField', [], {}),
             'created_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
@@ -79,4 +79,4 @@ class Migration:
         }
     }
     
-    complete_apps = ['kegweb']
+    complete_apps = ['gateweb']

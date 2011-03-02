@@ -24,4 +24,4 @@ from pygate.core import gatebot
 __doc__ = gatebot.__doc__
 
 if __name__ == '__main__':
-  gatebot.KegbotCoreApp.BuildAndRun()
+  gatebot.GatebotCoreApp.BuildAndRun()

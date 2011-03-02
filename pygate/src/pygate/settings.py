@@ -112,3 +112,7 @@ _m = hashlib.sha256()
 _m.update(SECRET_KEY)
 _m.update('KEGWEB API')
 KEGWEB_API_KEY = _m.hexdigest()[:16].lower()
+
+import sys
+if 'test' in sys.argv:
+    DATABASE_ENGINE = 'sqlite3'

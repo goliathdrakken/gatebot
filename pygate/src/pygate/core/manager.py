@@ -554,7 +554,7 @@ class SubscriptionManager(Manager):
     Manager.__init__(self, name, event_hub)
     self._server = server
   @EventHandler(kbevent.CreditAddedEvent)
-  @EventHandler(kbevent.DrinkCreatedEvent)
+  @EventHandler(kbevent.EntryCreatedEvent)
   @EventHandler(kbevent.LatchUpdate)
   def RepostEvent(self, event):
     self._server.SendEventToClients(event)

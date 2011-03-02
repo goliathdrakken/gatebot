@@ -73,7 +73,7 @@ gflags.DEFINE_integer('rotation_time', 10,
 
 gflags.DEFINE_integer('krest_update_interval', 60,
     'Time between periodic refreshes of tap and drink information '
-    'by the Kegweb REST client.', lower_bound=10)
+    'by the Gateweb REST client.', lower_bound=10)
 
 
 class KegUi:
@@ -279,7 +279,7 @@ class KrestUpdaterThread(util.KegbotThread):
         self._lcdui.UpdateLastDrink(username,
             last_drink.volume_ml, last_drink.pour_time)
       except IOError, e:
-        self._logger.warning('Could not connect to kegweb: %s' % e)
+        self._logger.warning('Could not connect to gateweb: %s' % e)
       time.sleep(FLAGS.krest_update_interval)
     self._logger.info('Exited main loop.')
 

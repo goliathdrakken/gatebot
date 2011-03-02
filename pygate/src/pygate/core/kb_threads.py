@@ -167,7 +167,7 @@ class EventHandlerThread(CoreThread):
 class NetProtocolThread(CoreThread):
   def ThreadMain(self):
     self._logger.info("network thread started")
-    server = self._kb_env.GetKegnetServer()
+    server = self._kb_env.GetGatenetServer()
     server.StartServer()
     while not self._quit:
       asyncore.loop(timeout=0.5, count=1)

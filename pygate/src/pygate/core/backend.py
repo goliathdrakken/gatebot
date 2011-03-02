@@ -75,12 +75,12 @@ class Backend:
     raise NotImplementedError
 
 
-class KegbotBackend(Backend):
+class GatebotBackend(Backend):
   """Django models backed Backend."""
 
   def __init__(self, sitename='default', site=None):
     self._logger = logging.getLogger('backend')
-    self._config = config.KegbotConfig(self._GetConfigDict())
+    self._config = config.GatebotConfig(self._GetConfigDict())
     if site:
       self._site = site
     else:

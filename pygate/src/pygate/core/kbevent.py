@@ -87,7 +87,7 @@ class LatchUpdate(Event):
 class TapIdleEvent(Event):
   gate_name = EventField()
 
-class DrinkCreatedEvent(Event):
+class EntryCreatedEvent(Event):
   latch_id = EventField()
   entry_id = EventField()
   gate_name = EventField()

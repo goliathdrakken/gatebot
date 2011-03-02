@@ -53,7 +53,7 @@ def set_defaults():
   main_gate = models.Gate(site=site, name='Main Gate', description='The main gate')
   main_gate.save()
 
-  b = backend.KegbotBackend()
+  b = backend.GatebotBackend()
 
 def gentestdata():
   """ default values (contents may change with schema) """

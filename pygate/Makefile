@@ -33,7 +33,7 @@ distclean: clean fixtures_clean
 
 test:
 	@echo "--- Running all tests"
-	@$(ADMIN_COMMAND) test --exe -i ".*_unittest" pygate
+	@$(ADMIN_COMMAND) test --exe -i ".*_test" pygate
 # Extra args for coverage:
 # --with-coverage --cover-package=pygate --cover-html \
 # --cover-html-dir=buid/coverage 

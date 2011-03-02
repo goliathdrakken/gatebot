@@ -57,7 +57,7 @@ gflags.DEFINE_string('gate_name', 'gateboard.latch0',
 MESSAGE_TERMINATOR = '\n\n'
 
 
-class KegnetProtocolHandler(asynchat.async_chat):
+class GatenetProtocolHandler(asynchat.async_chat):
   """A general purpose request handler for the Gatenet protocol.
 
   This async_chat subclass can be used for client and server implementations.
@@ -129,15 +129,15 @@ class KegnetProtocolHandler(asynchat.async_chat):
     self.push(str_message + MESSAGE_TERMINATOR)
 
 
-class KegnetServerHandler(KegnetProtocolHandler):
+class GatenetServerHandler(GatenetProtocolHandler):
   """ An asyncore handler for the core gatenet server. """
   def __init__(self, sock, server):
-    KegnetProtocolHandler.__init__(self, sock)
+    GatenetProtocolHandler.__init__(self, sock)
     self._server = server
     self._server.ChannelOpened(self)
 
   def handle_close(self):
-    KegnetProtocolHandler.handle_close(self)
+    GatenetProtocolHandler.handle_close(self)
     self._logger.info('Closing down...')
     self._server.ChannelClosed(self)
 
@@ -149,12 +149,12 @@ class KegnetServerHandler(KegnetProtocolHandler):
     self.close()
 
   def HandleNotification(self, message_dict):
-    KegnetProtocolHandler.HandleNotification(self, message_dict)
+    GatenetProtocolHandler.HandleNotification(self, message_dict)
     event_hub = self._server._kb_env.GetEventHub()
     event_hub.PublishEvent(self.PopNotification())
 
 
-class KegnetClient(KegnetProtocolHandler):
+class GatenetClient(GatenetProtocolHandler):
   RECONNECT_BACKOFF = [5, 5, 10, 10, 20, 20, 60]
   def __init__(self, addr=None):
     if not addr:
@@ -162,7 +162,7 @@ class KegnetClient(KegnetProtocolHandler):
     self._addr = util.str_to_addr(addr)
     self._last_reconnect = 0
     self._num_retries = 0
-    KegnetProtocolHandler.__init__(self)
+    GatenetProtocolHandler.__init__(self)
 
   def Reconnect(self, force=False):
     backoff_secs = self._ReconnectTimeout()
@@ -250,7 +250,7 @@ class KegnetClient(KegnetProtocolHandler):
     self._logger.info('Disconnected!')
 
 
-class SimpleKegnetClient(KegnetClient):
+class SimpleGatenetClient(GatenetClient):
 
   def serve_forever(self):
     self.Reconnect()
@@ -264,24 +264,24 @@ class SimpleKegnetClient(KegnetClient):
   def HandleNotification(self, message_dict):
     self._logger.debug('Received notification: %s' % message_dict)
     event = kbevent.DecodeEvent(message_dict)
-    if isinstance(event, kbevent.FlowUpdate):
-      self.onFlowUpdate(event)
-    elif isinstance(event, kbevent.DrinkCreatedEvent):
-      self.onDrinkCreated(event)
+    if isinstance(event, kbevent.LatchUpdate):
+      self.onLatchUpdate(event)
+    elif isinstance(event, kbevent.EntryCreatedEvent):
+      self.onEntryCreated(event)
     elif isinstance(event, kbevent.CreditAddedEvent):
       self.onCreditAdded(event)
 
-  def onFlowUpdate(self, event):
+  def onLatchUpdate(self, event):
     pass
 
-  def onDrinkCreated(self, event):
+  def onEntryCreated(self, event):
     pass
 
   def onCreditAdded(self, event):
     pass
 
 
-class KegnetClientThread(util.GatebotThread):
+class GatenetClientThread(util.GatebotThread):
   def __init__(self, name, client):
     util.GatebotThread.__init__(self, name)
     self._client = client
@@ -290,7 +290,7 @@ class KegnetClientThread(util.GatebotThread):
     self._client.serve_forever()
 
 
-class KegnetServer(asyncore.dispatcher):
+class GatenetServer(asyncore.dispatcher):
   """asyncore server implementation for Gatenet protocol"""
   def __init__(self, name, kb_env, addr='', port=0, qsize=5):
     self._name = name
@@ -345,11 +345,11 @@ class KegnetServer(asyncore.dispatcher):
     # TODO(mikey): error handling
     conn, addr = self.accept()
     conn.settimeout(1)
-    KegnetServerHandler(conn, self)
+    GatenetServerHandler(conn, self)
 
 
 if __name__ == '__main__':
-  server = KegnetServer(name='gatenet', kb_env=None,
+  server = GatenetServer(name='gatenet', kb_env=None,
       addr=FLAGS.kb_core_bind_addr)
 
   print "Start asyncore"

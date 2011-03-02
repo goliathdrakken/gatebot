@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""Unittest for kegbot module"""
+"""Unittest for gatebot module"""
 
 import commands
 import datetime
@@ -8,50 +8,35 @@ import time
 import logging
 import socket
 import unittest
-import kegbot
+import gatebot
 
 from django.test import TestCase
 
-from pykeg.core import defaults
-from pykeg.core import kbevent
-from pykeg.core import models
-from pykeg.core import kb_common
-from pykeg.core import units
-from pykeg.core.net import kegnet
+from pygate.core import defaults
+from pygate.core import kbevent
+from pygate.core import models
+from pygate.core import kb_common
+from pygate.core import units
+from pygate.core.net import gatenet
 
-from pykeg.beerdb import models as bdb_models
 
 LOGGER = logging.getLogger('unittest')
 
-class KegbotTestCase(TestCase):
+class GatebotTestCase(TestCase):
   def setUp(self):
     del logging.root.handlers[:]
     defaults.set_defaults()
     #defaults.gentestdata()
 
-    models.Drink.objects.all().delete()
+    models.Entry.objects.all().delete()
 
     self.site, _ = models.GatebotSite.objects.get_or_create(name='default')
 
-    self.keg_size = models.KegSize.objects.create(name='10Liter Keg',
-        volume_ml=units.Quantity(10000))
+    self.test_gate = models.Gate.objects.create(site=self.site,
+        name='Test Gate')
 
-    self.beer_style = bdb_models.BeerStyle.objects.create(name='test style')
-    self.brewer = bdb_models.Brewer.objects.create(name='test brewer')
-    self.beer_type = bdb_models.BeerType.objects.create(name='test beer type',
-        brewer=self.brewer, style=self.beer_style, calories_oz=10.0,
-        carbs_oz=2.0, abv=5.0)
-
-    self.test_keg = models.Keg.objects.create(site=self.site,
-        type=self.beer_type, size=self.keg_size, status='online',
-        description='None')
-
-    self.test_tap = models.KegTap.objects.create(site=self.site,
-        name='Test Tap', meter_name='test_meter_name',
-        ml_per_tick=(1000.0/2200.0), current_keg=self.test_keg)
-
-    self.kegbot = kegbot.KegbotCoreApp()
-    self.env = self.kegbot._env
+    self.gatebot = gatebot.GatebotCoreApp()
+    self.env = self.gatebot._env
     self.backend = self.env.GetBackend()
 
     self.test_user = self.backend.CreateNewUser('tester')
@@ -63,14 +48,14 @@ class KegbotTestCase(TestCase):
         'baadcafebeeff00d', 'tester_2')
     kb_common.AUTH_TOKEN_MAX_IDLE['core.onewire'] = 2
 
-    # Kill the kegbot flow processing thread so we can single step it.
+    # Kill the gatebot latch processing thread so we can single step it.
     self.service_thread = self.env._service_thread
     self.env._threads.remove(self.service_thread)
 
-    self.kegbot._Setup()
-    self.kegbot._StartThreads()
+    self.gatebot._Setup()
+    self.gatebot._StartThreads()
 
-    self.client = kegnet.KegnetClient()
+    self.client = gatenet.GatenetClient()
     while True:
       if self.client.Reconnect():
         break
@@ -78,39 +63,35 @@ class KegbotTestCase(TestCase):
   def tearDown(self):
     for thr in self.env.GetThreads():
       self.assert_(thr.isAlive(), "thread %s died unexpectedly" % thr.getName())
-    self.kegbot.Quit()
+    self.gatebot.Quit()
     for thr in self.env.GetThreads():
       self.assert_(not thr.isAlive(), "thread %s stuck" % thr.getName())
-    del self.kegbot
+    del self.gatebot
     del self.env
 
   def testSimpleFlow(self):
     # Synthesize a 2200-tick flow. The FlowManager should zero on the initial
     # reading of 1000.
-    meter_name = self.test_tap.meter_name
-    self.client.SendFlowStart(meter_name)
+    meter_name = self.test_gate.meter_name
+    self.client.SendLatchStart(meter_name)
     self.client.SendMeterUpdate(meter_name, 1000)
-    count = 0
-    while count < 2200:
-      count += 100
-      self.client.SendMeterUpdate(meter_name, 1000+count)
 
-    self.client.SendFlowStop(meter_name)
+    self.client.SendLatchStop(meter_name)
     self.service_thread._FlushEvents()
 
-    drinks = self.test_keg.drinks.valid()
+    drinks = self.test_keg.entries.valid()
     self.assertEquals(len(drinks), 1)
-    last_drink = drinks[0]
+    last_entry = drinks[0]
 
-    LOGGER.info('last drink: %s' % (last_drink,))
+    LOGGER.info('last drink: %s' % (last_entry,))
     self.assertEquals(last_drink.ticks, 2200)
 
     self.assertEquals(last_drink.keg, self.test_keg)
 
     self.assertEquals(last_drink.user, None)
 
-  def testAuthenticatedFlow(self):
-    meter_name = self.test_tap.meter_name
+  def testAuthenticatedLatch(self):
+    meter_name = self.test_gate.meter_name
 
     # Start a flow by pouring a few ticks.
     self.client.SendMeterUpdate(meter_name, 100)
@@ -120,53 +101,53 @@ class KegbotTestCase(TestCase):
 
     # The flow should be anonymous, since no user is authenticated.
     flow_mgr = self.env.GetFlowManager()
-    flows = flow_mgr.GetActiveFlows()
+    latches = flow_mgr.GetActiveFlows()
     self.assertEquals(len(flows), 1)
-    flow = flows[0]
-    self.assertEquals(flow.GetUsername(), '')
+    latch = latches[0]
+    self.assertEquals(latch.GetUsername(), '')
 
     # Now authenticate the user.
     # TODO(mikey): should use tap name rather than meter name.
-    self.client.SendAuthTokenAdd(self.test_tap.meter_name,
+    self.client.SendAuthTokenAdd(self.test_gate.meter_name,
         auth_device_name=self.test_token.auth_device,
         token_value=self.test_token.token_value)
     time.sleep(1.0) # TODO(mikey): need a synchronous wait
     self.service_thread._FlushEvents()
-    self.assertEquals(flow.GetUsername(), self.test_user.username)
+    self.assertEquals(latch.GetUsername(), self.test_user.username)
 
     # If another user comes along, he takes over the flow.
-    self.client.SendAuthTokenAdd(self.test_tap.meter_name,
+    self.client.SendAuthTokenAdd(self.test_gate.meter_name,
         auth_device_name=self.test_token_2.auth_device,
         token_value=self.test_token_2.token_value)
     time.sleep(1.0) # TODO(mikey): need a synchronous wait
     self.service_thread._FlushEvents()
 
-    flows = flow_mgr.GetActiveFlows()
-    self.assertEquals(len(flows), 1)
-    flow = flows[0]
-    self.assertEquals(flow.GetUsername(), self.test_user_2.username)
+    latches = flow_mgr.GetActiveFlows()
+    self.assertEquals(len(latches), 1)
+    latch = latches[0]
+    self.assertEquals(latch.GetUsername(), self.test_user_2.username)
 
     self.client.SendMeterUpdate(meter_name, 300)
     time.sleep(1.0) # TODO(mikey): need a synchronous wait
     self.service_thread._FlushEvents()
-    self.client.SendFlowStop(meter_name)
+    self.client.SendLatchStop(meter_name)
     time.sleep(1.0) # TODO(mikey): need a synchronous wait
     self.service_thread._FlushEvents()
 
-    drinks = self.test_keg.drinks.valid().order_by('id')
+    drinks = self.test_gate.entries.valid().order_by('id')
     self.assertEquals(len(drinks), 2)
-    self.assertEquals(protolib.ToProto(drinks[0].user), self.test_user)
-    self.assertEquals(protolib.ToProto(drinks[1].user), self.test_user_2)
+    self.assertEquals(protolib.ToProto(entries[0].user), self.test_user)
+    self.assertEquals(protolib.ToProto(entries[1].user), self.test_user_2)
 
   def testIdleFlow(self):
-    meter_name = self.test_tap.meter_name
-    self.client.SendFlowStart(meter_name)
+    meter_name = self.test_gate.meter_name
+    self.client.SendLatchStart(meter_name)
     self.client.SendMeterUpdate(meter_name, 0)
     self.client.SendMeterUpdate(meter_name, 100)
     time.sleep(1.0)
     self.service_thread._FlushEvents()
 
-    flows = self.env.GetFlowManager().GetActiveFlows()
+    flows = self.env.GetLatchManager().GetActiveLatches()
     self.assertEquals(len(flows), 1)
 
     # Rewind the flow activity clocks to simulate idleness.
@@ -178,7 +159,7 @@ class KegbotTestCase(TestCase):
     self.service_thread._FlushEvents()
 
     # Verify that the flow has been ended.
-    flows = self.env.GetFlowManager().GetActiveFlows()
+    latches = self.env.GetLatchManager().GetActiveLatches()
     self.assertEquals(len(flows), 0)
 
   def testTokenDebounce(self):

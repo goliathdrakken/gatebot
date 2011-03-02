@@ -132,9 +132,7 @@ class Migration(SchemaMigration):
             ('kind', self.gf('django.db.models.fields.CharField')(max_length=255)),
             ('when', self.gf('django.db.models.fields.DateTimeField')()),
             ('user', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='events', null=True, to=orm['auth.User'])),
-            ('drink', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='events', null=True, to=orm['core.Drink'])),
-            ('keg', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='events', null=True, to=orm['core.Keg'])),
-            ('session', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='events', null=True, to=orm['core.DrinkingSession'])),
+            ('entry', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='events', null=True, to=orm['core.Entry'])),
         ))
         db.send_create_signal('core', ['SystemEvent'])
 
@@ -277,12 +275,10 @@ class Migration(SchemaMigration):
         },
         'core.systemevent': {
             'Meta': {'ordering': "('-when', '-id')", 'object_name': 'SystemEvent'},
-            'drink': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'events'", 'null': 'True', 'to': "orm['core.Drink']"}),
+            'entry': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'events'", 'null': 'True', 'to': "orm['core.Entry']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'keg': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'events'", 'null': 'True', 'to': "orm['core.Keg']"}),
             'kind': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'seqn': ('django.db.models.fields.PositiveIntegerField', [], {}),
-            'session': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'events'", 'null': 'True', 'to': "orm['core.DrinkingSession']"}),
             'site': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'events'", 'to': "orm['core.GatebotSite']"}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'events'", 'null': 'True', 'to': "orm['auth.User']"}),
             'when': ('django.db.models.fields.DateTimeField', [], {})

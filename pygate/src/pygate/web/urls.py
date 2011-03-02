@@ -48,7 +48,7 @@ urlpatterns = patterns('',
     (r'^charts/', include('pygate.web.charts.urls')),
 
     ### kegadmin
-    (r'^kegadmin/', include('pygate.web.kegadmin.urls')),
+    (r'^gateadmin/', include('pygate.web.gateadmin.urls')),
 
     ### main kegweb urls
     (r'', include('pygate.web.gateweb.urls')),
