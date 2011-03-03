@@ -255,7 +255,7 @@ class SessionStatsBuilder(SystemStatsBuilder):
 
 
 def main():
-  from pykeg.core import models
+  from pygate.core import models
   last_drink = models.Drink.objects.valid().order_by('-seqn')[0]
   builder = KegStatsBuilder(last_drink)
 

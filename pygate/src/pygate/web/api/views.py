@@ -274,7 +274,7 @@ def recent_events_html(request):
 
   events = events[:20]
 
-  template = get_template('kegweb/event-box.html')
+  template = get_template('gateweb/event-box.html')
   results = []
   for event in events:
     row = {}
@@ -429,7 +429,7 @@ def last_drinks_html(request, limit=5):
   last_drinks = _get_last_drinks(request, limit)
 
   # render each drink
-  template = get_template('kegweb/drink-box.html')
+  template = get_template('gateweb/drink-box.html')
   results = []
   for d in last_drinks:
     row = {}
@@ -459,7 +459,7 @@ def tap_detail(request, tap_id):
 
 @py_to_json
 def tap_detail_get(request, tap_id):
-  tap = get_object_or_404(models.KegTap, meter_name=tap_id, site=request.kbsite)
+  tap = get_object_or_404(models.Gate, meter_name=tap_id, site=request.kbsite)
   tap_entry = {
     'tap': obj_to_dict(tap),
     'keg': obj_to_dict(tap.current_keg),

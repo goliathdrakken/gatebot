@@ -32,36 +32,34 @@ from django.shortcuts import render_to_response
 from pygate.core import backup
 from pygate.core import models
 
-from pygate.web.kegadmin import forms
+from pygate.web.gateadmin import forms
 
 @staff_member_required
-def kegadmin_main(request):
+def gateadmin_main(request):
   context = RequestContext(request)
-  return render_to_response('kegadmin/index.html', context)
+  return render_to_response('gateadmin/index.html', context)
 
 @staff_member_required
-def tap_list(request):
+def gate_list(request):
   context = RequestContext(request)
-  context['taps'] = request.kbsite.taps.all()
-  return render_to_response('kegadmin/tap-list.html', context)
+  context['gates'] = request.kbsite.gates.all()
+  return render_to_response('gateadmin/gate-list.html', context)
 
 @staff_member_required
-def edit_tap(request, tap_id):
+def edit_gate(request, gate_id):
   context = RequestContext(request)
-  tap = get_object_or_404(models.KegTap, site=request.kbsite, seqn=tap_id)
+  tap = get_object_or_404(models.Gate, site=request.kbsite, seqn=gate_id)
 
   form = forms.ChangeKegForm()
   if request.method == 'POST':
     form = forms.ChangeKegForm(request.POST)
     if form.is_valid():
-      current = tap.current_keg
+      current = gate.current_keg
       if current and current.status != 'offline':
         current.status = 'offline'
         current.save()
       new_keg = models.Keg()
       new_keg.site = request.kbsite
-      new_keg.type = form.cleaned_data['beer_type']
-      new_keg.size = form.cleaned_data['keg_size']
       new_keg.status = 'online'
       if form.cleaned_data['description']:
         new_keg.description = form.cleaned_data['description']
@@ -71,10 +69,10 @@ def edit_tap(request, tap_id):
       messages.success(request, 'The new keg was activated.')
       form = forms.ChangeKegForm()
 
-  context['taps'] = request.kbsite.taps.all()
-  context['tap'] = tap
+  context['gates'] = request.kbsite.taps.all()
+  context['gate'] = gate
   context['change_keg_form'] = form
-  return render_to_response('kegadmin/tap-edit.html', context)
+  return render_to_response('gateadmin/tap-edit.html', context)
 
 @staff_member_required
 def view_stats(request):
@@ -95,7 +93,7 @@ def generate_backup(request):
 
   kbsite = request.kbsite
   datestr = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
-  filename = 'kegbot-%s.%s.json.txt' % (kbsite.name, datestr)
+  filename = 'gatebot-%s.%s.json.txt' % (kbsite.name, datestr)
 
   output_fp = cStringIO.StringIO()
   backup.dump(output_fp, kbsite, indent=indent)

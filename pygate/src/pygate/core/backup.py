@@ -24,8 +24,6 @@ from pygate.core import kbjson
 from pygate.core import models
 from pygate.core import protolib
 
-from pygate.beerdb import models as bdb_models
-
 def _no_log(msg):
   pass
 

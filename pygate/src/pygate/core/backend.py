@@ -195,6 +195,7 @@ class WebBackend(Backend):
 
   def RecordEntry(self, gate_name, username=None, pour_time=None,
       duration=0, auth_token=None):
+    import pdb; pdb.set_trace()
     return self._client.RecordEntry(gate_name=gate_name, username=username,
         pour_time=pour_time, duration=duration, auth_token=auth_token)
 

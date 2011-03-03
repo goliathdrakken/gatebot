@@ -359,6 +359,7 @@ class EntryManager(Manager):
 
   @EventHandler(kbevent.LatchUpdate)
   def HandleLatchUpdateEvent(self, event):
+    import pdb; pdb.set_trace()
     """Attempt to save an entry record and derived data for |latch|"""
     self._logger.debug('Latch update event: latch_id=0x%08x' % event.latch_id)
     if event.state == event.LatchState.COMPLETED:
