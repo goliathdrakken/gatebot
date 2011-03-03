@@ -5,7 +5,7 @@ def enabled_features(request):
 
   Currently defined:
     USE_FACEBOOK - Allow registration and fbconnect login via django-socialauth
-    USE_TWITTER - pykeg.contrib.twitter is installed.
+    USE_TWITTER - pygate.contrib.twitter is installed.
   """
   # TODO(mikey): this might make it harder to diagnose why features aren't
   # visible/being used.

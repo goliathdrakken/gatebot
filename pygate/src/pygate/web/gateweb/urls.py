@@ -7,7 +7,7 @@ try:
 except ImportError:
   USE_DJANGO_REGISTRATION = False
 
-urlpatterns = patterns('pykeg.web.kegweb.views',
+urlpatterns = patterns('pygate.web.kegweb.views',
       ### main page
       (r'^$', 'index'),
 

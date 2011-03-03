@@ -41,7 +41,7 @@ class KegbotRegistrationForm(RegistrationForm):
     if 'pygate.contrib.twitter' in settings.INSTALLED_APPS:
       twitter_name = self.cleaned_data.get('twitter_name')
       if twitter_name:
-        from pykeg.contrib.twitter import models as twitter_models
+        from pygate.contrib.twitter import models as twitter_models
         link = twitter_models.UserTwitterLink()
         link.user_profile = new_profile
         link.twitter_name = twitter_name

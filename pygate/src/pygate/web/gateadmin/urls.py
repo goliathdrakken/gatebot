@@ -1,6 +1,6 @@
 from django.conf.urls.defaults import *
 
-urlpatterns = patterns('pykeg.web.kegadmin.views',
+urlpatterns = patterns('pygate.web.kegadmin.views',
       ### main page
       url(r'^$', 'kegadmin_main', name='kegadmin-main'),
       url(r'^taps/$', 'tap_list', name='kegadmin-tap-list'),

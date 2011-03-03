@@ -5,9 +5,9 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.views.generic.simple import redirect_to
 
-from pykeg.contrib.facebook import fbutil
-from pykeg.contrib.facebook import models
-from pykeg.web.contrib.facebook import forms
+from pygate.contrib.facebook import fbutil
+from pygate.contrib.facebook import models
+from pygate.web.contrib.facebook import forms
 
 import facebook
 

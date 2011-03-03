@@ -31,7 +31,7 @@
         {% endif %}
         data.setCell({{forloop.counter0}}, 3,
         {% if drink.user %}
-        '<a href="{%url pykeg.web.kegweb.views.user_detail drink.user.username %}">{{ drink.user}}</a>');
+        '<a href="{%url pygate.web.kegweb.views.user_detail drink.user.username %}">{{ drink.user}}</a>');
         {% else %}
         'guest');
         {% endif %}

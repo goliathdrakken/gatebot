@@ -29,10 +29,10 @@ from django.template import RequestContext
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render_to_response
 
-from pykeg.core import backup
-from pykeg.core import models
+from pygate.core import backup
+from pygate.core import models
 
-from pykeg.web.kegadmin import forms
+from pygate.web.kegadmin import forms
 
 @staff_member_required
 def kegadmin_main(request):

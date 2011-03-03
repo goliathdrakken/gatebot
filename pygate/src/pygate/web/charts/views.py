@@ -20,9 +20,9 @@
 
 from django.shortcuts import get_object_or_404
 
-from pykeg.core import models
-from pykeg.web.api.views import py_to_json
-from pykeg.web.charts import charts
+from pygate.core import models
+from pygate.web.api.views import py_to_json
+from pygate.web.charts import charts
 
 @py_to_json
 def temperature_sensor_history(request, nice_name):

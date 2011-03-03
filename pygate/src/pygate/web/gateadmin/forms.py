@@ -1,7 +1,7 @@
 from django import forms
 
-from pykeg.core import models
-from pykeg.beerdb import models as bdb
+from pygate.core import models
+from pygate.beerdb import models as bdb
 
 ALL_TAPS = models.KegTap.objects.all()
 ALL_SIZES = models.KegSize.objects.all()

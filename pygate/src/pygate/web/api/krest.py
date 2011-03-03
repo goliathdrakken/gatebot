@@ -43,7 +43,7 @@ FLAGS = gflags.FLAGS
 _DEFAULT_URL = 'http://localhost:8000/api/'
 _DEFAULT_KEY = ''
 try:
-  from pykeg import settings
+  from pygate import settings
   if hasattr(settings, 'KEGWEB_BASE_URL'):
     _DEFAULT_URL = '%s/api' % getattr(settings, 'KEGWEB_BASE_URL')
   if hasattr(settings, 'KEGWEB_API_KEY'):

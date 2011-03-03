@@ -18,7 +18,7 @@
 
 from django.conf.urls.defaults import *
 
-urlpatterns = patterns('pykeg.web.charts.views',
+urlpatterns = patterns('pygate.web.charts.views',
     url(r'^temperature-sensor/(?P<nice_name>\w+)/history/?$',
         'temperature_sensor_history'),
     url(r'^keg/(?P<keg_id>\d+)/volume/?$', 'keg_volume'),

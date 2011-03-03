@@ -2,7 +2,7 @@
 
 from south.db import db
 from django.db import models
-from pykeg.web.accounting.models import *
+from pygate.web.accounting.models import *
 
 class Migration:
     

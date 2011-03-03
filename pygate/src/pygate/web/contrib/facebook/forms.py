@@ -1,5 +1,5 @@
 from django import forms
-from pykeg.contrib.facebook import models as facebook_models
+from pygate.contrib.facebook import models as facebook_models
 
 class FacebookSettingsForm(forms.ModelForm):
   class Meta:
