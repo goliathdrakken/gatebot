@@ -1,21 +1,21 @@
 # -*- coding: latin-1 -*-
 # Copyright 2010 Mike Wakerly <opensource@hoho.com>
 #
-# This file is part of the Pykeg package of the Kegbot project.
-# For more information on Pykeg or Kegbot, see http://kegbot.org/
+# This file is part of the Pygate package of the Gatebot project.
+# For more information on Pygate or Gatebot, see http://gatebot.org/
 #
-# Pykeg is free software: you can redistribute it and/or modify
+# Pygate is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 2 of the License, or
 # (at your option) any later version.
 #
-# Pykeg is distributed in the hope that it will be useful,
+# Pygate is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
+# along with Pygate.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
 import os
@@ -37,7 +37,7 @@ from pygate.core import stats
 from pygate.core import units
 from pygate.core import util
 
-"""Django models definition for the kegbot database."""
+"""Django models definition for the gatebot database."""
 
 def mugshot_file_name(instance, filename):
   rand_salt = random.randrange(0xffff)
@@ -113,7 +113,7 @@ class UserProfile(models.Model):
 
   def RecomputeStats(self):
     self.user.stats.all().delete()
-    last_d = self.user.drinks.valid().order_by('-starttime')
+    last_d = self.user.entries.valid().order_by('-starttime')
     if last_d:
       last_d[0]._UpdateUserStats()
 
@@ -190,7 +190,7 @@ class Entry(models.Model):
   def PostProcess(self):
     self._UpdateSystemStats()
     self._UpdateUserStats()
-    SystemEvent.ProcessDrink(self)
+    SystemEvent.ProcessEntry(self)
 
 pre_save.connect(_set_seqn_pre_save, sender=Entry)
 
@@ -270,11 +270,11 @@ class _StatsModel(models.Model):
   date = models.DateTimeField(default=datetime.datetime.now)
   stats = fields.JSONField()
 
-  def Update(self, drink, force=False):
+  def Update(self, entry, force=False):
     previous = self.stats
     if force:
       previous = None
-    builder = self.STATS_BUILDER(drink, previous)
+    builder = self.STATS_BUILDER(entry, previous)
     self.stats = builder.Build()
     self.save()
 
@@ -351,37 +351,21 @@ class SystemEvent(models.Model):
         e.save()
 
   @classmethod
-  def ProcessDrink(cls, drink):
-    keg = drink.keg
-    session = drink.session
-    site = drink.site
-    user = drink.user
-
-    if keg:
-      q = keg.events.filter(kind='keg_tapped')
-      if q.count() == 0:
-        e = keg.events.create(site=site, kind='keg_tapped', when=drink.starttime,
-            keg=keg, user=user, drink=drink, session=session)
-        e.save()
-
-    if session:
-      q = session.events.filter(kind='session_started')
-      if q.count() == 0:
-        e = session.events.create(site=site, kind='session_started',
-            when=session.starttime, drink=drink, user=user)
-        e.save()
+  def ProcessEntry(cls, entry):
+    site = entry.site
+    user = entry.user
 
     if user:
       q = user.events.filter(kind='session_joined', session=session)
       if q.count() == 0:
         e = user.events.create(site=site, kind='session_joined',
-            when=drink.starttime, session=session, drink=drink, user=user)
+            when=entry.starttime, session=session, entry=entry, user=user)
         e.save()
 
-    q = drink.events.filter(kind='drink_poured')
+    q = entry.events.filter(kind='drink_poured')
     if q.count() == 0:
-      e = drink.events.create(site=site, kind='drink_poured',
-          when=drink.starttime, drink=drink, user=user, keg=keg,
+      e = entry.events.create(site=site, kind='drink_poured',
+          when=entry.starttime, entry=entry, user=user, keg=keg,
           session=session)
       e.save()
 

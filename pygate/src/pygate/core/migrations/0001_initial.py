@@ -254,7 +254,7 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
             'seqn': ('django.db.models.fields.PositiveIntegerField', [], {}),
-            'site': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'taps'", 'to': "orm['core.GatebotSite']"})
+            'site': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'gates'", 'to': "orm['core.GatebotSite']"})
         },
         'core.gatebotsite': {
             'Meta': {'object_name': 'GatebotSite'},

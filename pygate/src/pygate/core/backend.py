@@ -1,20 +1,20 @@
 # Copyright 2010 Mike Wakerly <opensource@hoho.com>
 #
-# This file is part of the Pykeg package of the Kegbot project.
-# For more information on Pykeg or Kegbot, see http://kegbot.org/
+# This file is part of the Pygate package of the Gatebot project.
+# For more information on Pygate or Gatebot, see http://gatebot.org/
 #
-# Pykeg is free software: you can redistribute it and/or modify
+# Pygate is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 2 of the License, or
 # (at your option) any later version.
 #
-# Pykeg is distributed in the hope that it will be useful,
+# Pygate is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
+# along with Pygate.  If not, see <http://www.gnu.org/licenses/>.
 
 """Wrapper module for database implementation."""
 
@@ -65,9 +65,9 @@ class Backend:
     """Returns all currently enabled gates."""
     raise NotImplementedError
 
-  def RecordEntry(self, tap_name, username=None, pour_time=None,
+  def RecordEntry(self, gate_name, username=None, pour_time=None,
       duration=0, auth_token=None):
-    """Records a new drink with the given parameters."""
+    """Records a new entry with the given parameters."""
     raise NotImplementedError
 
   def GetAuthToken(self, auth_device, token_value):
@@ -132,7 +132,7 @@ class GatebotBackend(Backend):
   def GetAllGates(self):
     return protolib.ToProto(list(models.Gate.objects.all()))
 
-  def RecordDrink(self, tap_name, username=None, pour_time=None,
+  def RecordEntry(self, gate_name, username=None, pour_time=None,
       duration=0, auth_token=None):
 
     gate = self._GetGateFromName(gate_name)
@@ -193,7 +193,7 @@ class WebBackend(Backend):
     ts = self._client.GateStatus()
     return (d['gate'] for d in self._client.GateStatus()['gates'])
 
-  def RecordEntry(self, tap_name, username=None, pour_time=None,
+  def RecordEntry(self, gate_name, username=None, pour_time=None,
       duration=0, auth_token=None):
     return self._client.RecordEntry(gate_name=gate_name, username=username,
         pour_time=pour_time, duration=duration, auth_token=auth_token)

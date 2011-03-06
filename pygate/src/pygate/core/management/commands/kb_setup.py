@@ -17,7 +17,7 @@ class Command(NoArgsCommand):
   def handle(self, **options):
     cfg = None
     try:
-      b = backend.KegbotBackend()
+      b = backend.GatebotBackend()
       cfg = b.GetConfig()
     except backend.BackendError, e:
       pass

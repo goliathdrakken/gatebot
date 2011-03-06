@@ -1,20 +1,20 @@
 # Copyright 2010 Mike Wakerly <opensource@hoho.com>
 #
-# This file is part of the Pykeg package of the Kegbot project.
-# For more information on Pykeg or Kegbot, see http://kegbot.org/
+# This file is part of the Pygate package of the Gatebot project.
+# For more information on Pygate or Gatebot, see http://gatebot.org/
 #
-# Pykeg is free software: you can redistribute it and/or modify
+# Pygate is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 2 of the License, or
 # (at your option) any later version.
 #
-# Pykeg is distributed in the hope that it will be useful,
+# Pygate is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
+# along with Pygate.  If not, see <http://www.gnu.org/licenses/>.
 
 """Routines from converting data to and from Protocol Buffer format."""
 
@@ -68,12 +68,12 @@ def AuthTokenToProto(record, full=False):
   return ret
 
 @converts(models.Gate)
-def GateToProto(tap, full=False):
+def GateToProto(gate, full=False):
   ret = AttrDict()
-  ret.id = str(tap.seqn)
-  ret.name = tap.name
-  if tap.description:
-    ret.description = tap.description
+  ret.id = str(gate.seqn)
+  ret.name = gate.name
+  if gate.description:
+    ret.description = gate.description
   return ret
 
 @converts(models.User)
@@ -108,12 +108,8 @@ def SystemEventToProto(record, full=False):
   ret.id = record.seqn
   ret.kind = record.kind
   ret.time = record.when
-  if record.drink:
-    ret.drink = record.drink.seqn
-  if record.keg:
-    ret.keg = record.keg.seqn
-  if record.session:
-    ret.session = record.session.seqn
+  if record.entry:
+    ret.entry = record.entry.seqn
   if record.user:
     ret.user = record.user.username
   return ret

@@ -1,20 +1,20 @@
 # Copyright 2009 Mike Wakerly <opensource@hoho.com>
 #
-# This file is part of the Pykeg package of the Kegbot project.
-# For more information on Pykeg or Kegbot, see http://kegbot.org/
+# This file is part of the Pygate package of the Gatebot project.
+# For more information on Pygate or Gatebot, see http://gatebot.org/
 #
-# Pykeg is free software: you can redistribute it and/or modify
+# Pygate is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 2 of the License, or
 # (at your option) any later version.
 #
-# Pykeg is distributed in the hope that it will be useful,
+# Pygate is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
+# along with Pygate.  If not, see <http://www.gnu.org/licenses/>.
 
 """Simple event-passing mechanisms.
 
@@ -84,7 +84,7 @@ class LatchUpdate(Event):
   start_time = EventField()
   last_activity_time = EventField()
 
-class TapIdleEvent(Event):
+class GateIdleEvent(Event):
   gate_name = EventField()
 
 class EntryCreatedEvent(Event):
@@ -110,8 +110,8 @@ class ThermoEvent(Event):
 
 class LatchRequest(Event):
   class Action:
-    START_LATCH = "start_latch"
-    STOP_LATCH = "stop_latch"
+    OPEN_LATCH = "open_latch"
+    CLOSE_LATCH = "close_latch"
     REPORT_STATUS = "report_status"
   gate_name = EventField()
   request = EventField()
@@ -124,10 +124,6 @@ class HeartbeatMinuteEvent(Event):
 
 class HeartbeatHourEvent(Event):
   pass
-
-class CreditAddedEvent(Event):
-  amount = EventField()
-  username = EventField()
 
 EVENT_NAME_TO_CLASS = {}
 for cls in Event.__subclasses__():

@@ -1,20 +1,20 @@
 # Copyright 2010 Mike Wakerly <opensource@hoho.com>
 #
-# This file is part of the Pykeg package of the Kegbot project.
-# For more information on Pykeg or Kegbot, see http://kegbot.org/
+# This file is part of the Pygate package of the Gatebot project.
+# For more information on Pygate or Gatebot, see http://gatebot.org/
 #
-# Pykeg is free software: you can redistribute it and/or modify
+# Pygate is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 2 of the License, or
 # (at your option) any later version.
 #
-# Pykeg is distributed in the hope that it will be useful,
+# Pygate is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
+# along with Pygate.  If not, see <http://www.gnu.org/licenses/>.
 
 """Tap (single path of fluid) management module."""
 
@@ -85,7 +85,7 @@ class GateManager(Manager):
     ret = []
     for gate in self.GetAllGates():
       meter = gate.GetMeter()
-      ret.append('Gate "%s"' % tap.GetName())
+      ret.append('Gate "%s"' % gate.GetName())
       ret.append('  last activity: %s' % (meter.GetLastActivity(),))
       ret.append('')
 
@@ -97,7 +97,7 @@ class GateManager(Manager):
 
   def _CheckGateExists(self, name):
     if not self.GateExists(name):
-      raise UnknownTapError
+      raise UnknownGateError
 
   def RegisterGate(self, name):
     self._logger.info('Registering new gate: %s' % name)
@@ -200,7 +200,7 @@ class LatchManager(Manager):
   deal with devices directly.
 
   Gates can be started in multiple ways:
-    - Explicitly, by a call to StartFlow
+    - Explicitly, by a call to OpenLatch
     - Implicitly, by a call to HandleGateActivity
   """
   def __init__(self, name, event_hub, gate_manager):
@@ -213,10 +213,10 @@ class LatchManager(Manager):
 
   @util.synchronized
   def _GetNextLatchId(self):
-    """Returns the next usable flow identifier.
+    """Returns the next usable latch identifier.
 
-    Flow IDs are simply sequence numbers, used around the core to disambiguate
-    flows."""
+    Latch IDs are simply sequence numbers, used around the core to disambiguate
+    latches."""
     ret = self._next_latch_id
     self._next_latch_id += 1
     return ret
@@ -229,7 +229,7 @@ class LatchManager(Manager):
     else:
       ret.append('Active latches: %i' % len(active_latches))
       for latch in active_latches:
-        ret.append('  Latch on gate %s' % latch.GetTap())
+        ret.append('  Latch on gate %s' % latch.GetGate())
         ret.append('         username: %s' % latch.GetUsername())
         ret.append('       start time: %s' % latch.GetStartTime())
         ret.append('      last active: %s' % latch.GetEndTime())
@@ -243,7 +243,7 @@ class LatchManager(Manager):
   def GetLatch(self, gate_name):
     return self._latch_map.get(gate_name)
 
-  def StartLatch(self, gate_name, username='', max_idle_secs=10):
+  def OpenLatch(self, gate_name, username='', max_idle_secs=10):
     try:
       gate = self._gate_manager.GetGate(gate_name)
     except UnknownGateError:
@@ -260,11 +260,11 @@ class LatchManager(Manager):
       else:
         self._logger.info('User "%s" is replacing the existing latch' %
             username)
-        self.StopLatch(gate_name)
+        self.CloseLatch(gate_name)
         current = None
 
     if current and current.GetUsername() == username:
-      # Existing flow owned by this username.  Just poke it.
+      # Existing latch owned by this username.  Just poke it.
       current.SetMaxIdle(max_idle_secs)
       self._PublishUpdate(current)
       return current
@@ -273,15 +273,16 @@ class LatchManager(Manager):
       new_latch = Latch(gate, latch_id=self._GetNextLatchId(), username=username,
           max_idle_secs=max_idle_secs)
       self._latch_map[gate_name] = new_latch
-      self._logger.info('Starting latch: %s' % new_latch)
+      self._logger.info('Opening latch: %s' % new_latch)
       self._PublishUpdate(new_latch)
+      """self.UpdateLatch(gate_name, 10)"""
       return new_latch
 
   def SetUsername(self, latch, username):
     latch.SetUsername(username)
     self._PublishUpdate(latch)
 
-  def StopLatch(self, gate_name):
+  def CloseLatch(self, gate_name):
     try:
       latch = self.GetLatch(gate_name)
     except UnknownGateError:
@@ -289,7 +290,7 @@ class LatchManager(Manager):
     if not latch:
       return None
 
-    self._logger.info('Stopping latch: %s' % latch)
+    self._logger.info('Closing latch: %s' % latch)
     gate = latch.GetGate()
     del self._latch_map[gate_name]
     self._StateChange(latch, kbevent.LatchUpdate.LatchState.COMPLETED)
@@ -303,8 +304,9 @@ class LatchManager(Manager):
       # TODO(mikey): guard against this happening
       return None, None
 
-    delta = self._gate_manager.UpdateDeviceReading(gate.GetName(), meter_reading)
-    self._logger.debug('Flow update: tap=%s meter_reading=%i (delta=%i)' %
+    """delta = self._gate_manager.UpdateDeviceReading(gate.GetName(), meter_reading)"""
+    delta = meter_reading
+    self._logger.debug('Latch update: gate=%s meter_reading=%i (delta=%i)' %
         (gate_name, meter_reading, delta))
 
     if delta == 0:
@@ -312,10 +314,6 @@ class LatchManager(Manager):
 
     is_new = False
     latch = self.GetLatch(gate_name)
-    if latch is None:
-      self._logger.debug('Starting flow implicitly due to activity.')
-      latch = self.StartLatch(gate_name)
-      is_new = True
 
     if latch.GetState() != kbevent.LatchUpdate.LatchState.ACTIVE:
       self._StateChange(latch, kbevent.LatchUpdate.LatchState.ACTIVE)
@@ -338,14 +336,14 @@ class LatchManager(Manager):
       if latch.IsIdle():
         self._logger.info('Latch has become too idle, ending: %s' % latch)
         self._StateChange(latch, kbevent.LatchUpdate.LatchState.IDLE)
-        self.StopLatch(latch.GetGate().GetName())
+        self.CloseLatch(latch.GetGate().GetName())
 
   @EventHandler(kbevent.LatchRequest)
   def _HandleLatchRequestEvent(self, event):
-    if event.request == event.Action.START_LATCH:
-      self.StartLatch(event.gate_name)
-    elif event.request == event.Action.STOP_LATCH:
-      self.StopLatch(event.gate_name)
+    if event.request == event.Action.OPEN_LATCH:
+      self.OpenLatch(event.gate_name)
+    elif event.request == event.Action.CLOSE_LATCH:
+      self.CloseLatch(event.gate_name)
 
 class EntryManager(Manager):
   def __init__(self, name, event_hub, backend):
@@ -380,7 +378,7 @@ class EntryManager(Manager):
 
     # Log the entry.  If the username is empty or invalid, the backend will
     # assign it to the default (anonymous) user.  The backend will assign the
-    # drink to a keg.
+    # entry to a gate.
     d = self._backend.RecordEntry(gate_name, username=username,
         pour_time=pour_time, duration=duration, auth_token=auth_token)
 
@@ -396,7 +394,7 @@ class EntryManager(Manager):
     self._last_entry = d
 
     # notify listeners
-    created = kbevent.DrinkCreatedEvent()
+    created = kbevent.EntryCreatedEvent()
     created.latch_id = latch_id
     created.entry_id = d.id
     created.gate_name = gate_name
@@ -454,7 +452,7 @@ class AuthenticationManager(Manager):
     self._latch_manager = latch_manager;
     self._gate_manager = gate_manager
     self._backend = backend
-    self._tokens = {}  # maps tap name to currently active token
+    self._tokens = {}  # maps gate name to currently active token
     self._lock = threading.RLock()
 
   @EventHandler(kbevent.TokenAuthEvent)
@@ -474,10 +472,10 @@ class AuthenticationManager(Manager):
       return existing
     return new_rec
 
-  def _MaybeStartFlow(self, record):
+  def _MaybeOpenLatch(self, record):
     """Called when the given token has been added.
 
-    This will either start or renew a flow on the FlowManager."""
+    This will either start or renew a latch on the LatchManager."""
     username = None
     gate_name = record.gate_name
     try:
@@ -493,22 +491,22 @@ class AuthenticationManager(Manager):
     max_idle = kb_common.AUTH_DEVICE_MAX_IDLE_SECS.get(record.auth_device)
     if max_idle is None:
       max_idle = kb_common.AUTH_DEVICE_MAX_IDLE_SECS['default']
-    self._latch_manager.StartLatch(gate_name, username=username,
+    self._latch_manager.OpenLatch(gate_name, username=username,
         max_idle_secs=max_idle)
 
-  def _MaybeEndFlow(self, record):
+  def _MaybeCloseLatch(self, record):
     """Called when the given token has been removed.
 
     If the auth device is a captive auth device, then this will forcibly end the
-    flow.  Otherwise, this is a no-op."""
+    latch.  Otherwise, this is a no-op."""
     is_captive = kb_common.AUTH_DEVICE_CAPTIVE.get(record.auth_device)
     if is_captive is None:
       is_captive = kb_common.AUTH_DEVICE_CAPTIVE['default']
     if is_captive:
-      self._logger.debug('Captive auth device, ending flow immediately.')
-      self._latch_manager.StopLatch(record.gate_name)
+      self._logger.debug('Captive auth device, ending latch immediately.')
+      self._latch_manager.CloseLatch(record.gate_name)
     else:
-      self._logger.debug('Non-captive auth device, not ending flow.')
+      self._logger.debug('Non-captive auth device, not ending latch.')
 
   @util.synchronized
   def _TokenAdded(self, record):
@@ -516,17 +514,12 @@ class AuthenticationManager(Manager):
     self._logger.info('Token attached: %s' % record)
     existing = self._tokens.get(record.gate_name)
 
-    if existing == record:
-      # Token is already known; nothing to do except update it.
-      record.UpdateLastSeen()
-      return
-
     if existing:
-      self._logger.info('Removing previous token')
+      self._logger.info	('Removing previous token')
       self._TokenRemoved(existing)
 
     self._tokens[record.gate_name] = record
-    self._MaybeStartFlow(record)
+    self._MaybeOpenLatch(record)
 
   @util.synchronized
   def _TokenRemoved(self, record):
@@ -537,7 +530,7 @@ class AuthenticationManager(Manager):
 
     record.SetStatus(record.STATUS_REMOVED)
     del self._tokens[record.gate_name]
-    self._MaybeEndFlow(record)
+    self._MaybeCloseLatch(record)
 
   def _GetGatesForGateName(self, gate_name):
     if gate_name == kb_common.ALIAS_ALL_GATES:
@@ -553,7 +546,6 @@ class SubscriptionManager(Manager):
   def __init__(self, name, event_hub, server):
     Manager.__init__(self, name, event_hub)
     self._server = server
-  @EventHandler(kbevent.CreditAddedEvent)
   @EventHandler(kbevent.EntryCreatedEvent)
   @EventHandler(kbevent.LatchUpdate)
   def RepostEvent(self, event):

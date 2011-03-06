@@ -2,29 +2,29 @@
 #
 # Copyright 2003-2009 Mike Wakerly <opensource@hoho.com>
 #
-# This file is part of the Pykeg package of the Kegbot project.
-# For more information on Pykeg or Kegbot, see http://kegbot.org/
+# This file is part of the Pygate package of the Gatebot project.
+# For more information on Pygate or Gatebot, see http://gatebot.org/
 #
-# Pykeg is free software: you can redistribute it and/or modify
+# Pygate is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 2 of the License, or
 # (at your option) any later version.
 #
-# Pykeg is distributed in the hope that it will be useful,
+# Pygate is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Pykeg.  If not, see <http://www.gnu.org/licenses/>.
+# along with Pygate.  If not, see <http://www.gnu.org/licenses/>.
 
 """Gatebot Core Application.
 
-This is the Kegbot Core application, which runs the main drink recording and
-post-processing loop. There is exactly one instance of a kegbot core per kegbot
+This is the Gatebot Core application, which runs the main entry recording and
+post-processing loop. There is exactly one instance of a gatebot core per gatebot
 system.
 
-For more information, please see the kegbot documentation.
+For more information, please see the gatebot documentation.
 """
 
 import logging
@@ -50,7 +50,7 @@ gflags.DEFINE_boolean('web_backend', False,
 class GatebotEnv(object):
   """ A class that wraps the context of the gatebot core.
 
-  An instance of this class owns all the threads and services used in the kegbot
+  An instance of this class owns all the threads and services used in the gatebot
   core. It is commonly passed around to objects that the core creates.
   """
   def __init__(self):
