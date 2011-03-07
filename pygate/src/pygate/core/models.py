@@ -355,18 +355,10 @@ class SystemEvent(models.Model):
     site = entry.site
     user = entry.user
 
-    if user:
-      q = user.events.filter(kind='session_joined', session=session)
-      if q.count() == 0:
-        e = user.events.create(site=site, kind='session_joined',
-            when=entry.starttime, session=session, entry=entry, user=user)
-        e.save()
-
     q = entry.events.filter(kind='drink_poured')
     if q.count() == 0:
       e = entry.events.create(site=site, kind='drink_poured',
-          when=entry.starttime, entry=entry, user=user, keg=keg,
-          session=session)
+          when=entry.starttime, entry=entry, user=user, keg=keg)
       e.save()
 
 pre_save.connect(_set_seqn_pre_save, sender=SystemEvent)
