@@ -328,7 +328,7 @@ class LatchManager(Manager):
 
   def _PublishUpdate(self, latch):
     event = latch.GetUpdateEvent()
-    self._PublishEvent(latch)
+    self._PublishEvent(event)
 
   @EventHandler(kbevent.HeartbeatSecondEvent)
   def _HandleHeartbeatEvent(self, event):
@@ -359,7 +359,7 @@ class EntryManager(Manager):
 
   @EventHandler(kbevent.LatchUpdate)
   def HandleLatchUpdateEvent(self, event):
-    import pdb; pdb.set_trace()
+    self._logger.debug('Latch Update event')
     """Attempt to save an entry record and derived data for |latch|"""
     self._logger.debug('Latch update event: latch_id=0x%08x' % event.latch_id)
     if event.state == event.LatchState.COMPLETED:

@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Pygate.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Methods to generate cached statistics from drinks."""
+"""Methods to generate cached statistics from entries."""
 
 import copy
 import inspect
@@ -24,8 +24,8 @@ import itertools
 import logging
 
 class StatsBuilder:
-  def __init__(self, drink, previous=None):
-    self._drink = drink
+  def __init__(self, entry, previous=None):
+    self._entry = entry
     self._logger = logging.getLogger('stats-builder')
 
     if previous is None:
@@ -35,7 +35,7 @@ class StatsBuilder:
     prev_seqn = self._previous.get('_seqn', -1)
     prev_revision = self._previous.get('_revision', -1)
 
-    if prev_seqn == drink.seqn:
+    if prev_seqn == entry.seqn:
       # Skip if asked to regenerate same stats.
       self._logger.debug('skipping: same seqn')
       return
@@ -53,164 +53,106 @@ class StatsBuilder:
         yield (cls.STAT_NAME, cls)
 
   def Build(self):
-    drinks = self._AllDrinks()
+    entries = self._AllDrinks()
     result = copy.deepcopy(self._previous)
     for statname, cls in self._AllStats():
       o = cls()
       if statname not in result:
         self._logger.debug('+++ %s (FULL)' % statname)
-        result[statname] = o.Full(drinks)
+        result[statname] = o.Full(entries)
       else:
         self._logger.debug('+++ %s (partial)' % statname)
-        result[statname] = o.Incremental(self._drink, result[statname])
+        result[statname] = o.Incremental(self._entry, result[statname])
 
     result['_revision'] = self.REVISION
-    result['_seqn'] = self._drink.seqn
+    result['_seqn'] = self._entry.seqn
     return result
 
 
 class Stat:
   def __init__(self):
     pass
-  def Full(self, drinks):
+  def Full(self, entries):
     raise NotImplementedError
-  def Incremental(self, drink, previous):
+  def Incremental(self, entry, previous):
     raise NotImplementedError
 
 
 class BaseStatsBuilder(StatsBuilder):
   """Builder which generates a variety of stats from object information."""
 
-  class TotalVolume(Stat):
-    STAT_NAME = 'total_volume'
-    def Full(self, drinks):
-      return sum(drink.volume_ml for drink in drinks)
-    def Incremental(self, drink, previous):
-      return previous + drink.volume_ml
-
   class TotalPours(Stat):
     STAT_NAME = 'total_count'
-    def Full(self, drinks):
-      return drinks.count()
-    def Incremental(self, drink, previous):
+    def Full(self, entries):
+      return entries.count()
+    def Incremental(self, entry, previous):
       return previous + 1
-
-  class AverageVolume(Stat):
-    STAT_NAME = 'volume_avg'
-    def Full(self, drinks):
-      count = drinks.count()
-      if count:
-        average = sum(drink.volume_ml for drink in drinks) / float(count)
-      else:
-        average = 0
-      return {'count': count, 'average': average}
-    def Incremental(self, drink, previous):
-      average = previous['average']
-      count = previous['count']
-      vol = drink.volume_ml
-
-      res = previous
-      res['average'] = (average*count + vol) / (count + 1)
-      res['count'] = count + 1
-      return res
-
-  class LargestVolume(Stat):
-    STAT_NAME = 'volume_max'
-    def Full(self, drinks):
-      res = {'volume': 0, 'id': 0}
-      drinks = drinks.order_by('-volume_ml')
-      if drinks.count():
-        res['volume'] = drinks[0].volume_ml
-        res['id'] = drinks[0].seqn
-      return res
-    def Incremental(self, drink, previous):
-      if drink.volume_ml <= previous['volume']:
-        return previous
-      previous['volume'] = drink.volume_ml
-      previous['id'] = drink.seqn
-      return previous
-
-  class SmallestVolume(Stat):
-    STAT_NAME = 'volume_min'
-    def Full(self, drinks):
-      res = {'volume': 0, 'id': 0}
-      drinks = drinks.order_by('volume_ml')
-      if drinks.count():
-        res['volume'] = drinks[0].volume_ml
-        res['id'] = drinks[0].seqn
-      return res
-    def Incremental(self, drink, previous):
-      if drink.volume_ml >= previous['volume']:
-        return previous
-      previous['volume'] = drink.volume_ml
-      previous['id'] = drink.seqn
-      return previous
 
   class VolumeByDayOfweek(Stat):
     STAT_NAME = 'volume_by_day_of_week'
-    def Full(self, drinks):
+    def Full(self, entries):
       # Note: uses the session's starttime, rather than the drink's. This causes
       # late-night sessions to be reported for the day on which they were
       # started.
       volmap = dict((str(i), 0) for i in xrange(7))
-      for drink in drinks:
-        weekday = str(drink.session.starttime.weekday())
-        volmap[weekday] += drink.volume_ml
+      for entry in entries:
+        weekday = str(entry.starttime.weekday())
+        volmap[weekday] += entry.volume_ml
       return volmap
-    def Incremental(self, drink, previous):
-      weekday = str(drink.session.starttime.weekday())
-      previous[weekday] += drink.volume_ml
+    def Incremental(self, entry, previous):
+      weekday = str(entry.starttime.weekday())
+      previous[weekday] += entry.volume_ml
       return previous
 
   class VolumeByDrinker(Stat):
     STAT_NAME = 'volume_by_drinker'
-    def Full(self, drinks):
+    def Full(self, entries):
       volmap = {}
-      for drink in drinks:
-        if drink.user:
-          u = drink.user.username
+      for entry in entries:
+        if entry.user:
+          u = entry.user.username
         else:
           u = None
-        volmap[u] = volmap.get(u, 0) + drink.volume_ml
+        volmap[u] = volmap.get(u, 0) + entry.volume_ml
       return volmap
-    def Incremental(self, drink, previous):
-      if drink.user:
-        u = drink.user.username
+    def Incremental(self, entry, previous):
+      if entry.user:
+        u = entry.user.username
       else:
         u = None
-      previous[u] = previous.get(u, 0) + drink.volume_ml
+      previous[u] = previous.get(u, 0) + entry.volume_ml
       return previous
 
   class Drinkers(Stat):
     STAT_NAME = 'drinkers'
-    def Full(self, drinks):
+    def Full(self, entries):
       drinkers = set()
-      for drink in drinks:
+      for entry in entries:
         u = None
-        if drink.user:
-          u = drink.user.username
+        if entry.user:
+          u = entry.user.username
         if u not in drinkers:
           drinkers.add(u)
       return list(drinkers)
-    def Incremental(self, drink, previous):
+    def Incremental(self, entry, previous):
       u = None
-      if drink.user:
-        u = drink.user.username
+      if entry.user:
+        u = entry.user.username
       if u not in previous:
         previous.append(u)
       return previous
 
   class RegisteredDrinkers(Stat):
     STAT_NAME = 'registered_drinkers'
-    def Full(self, drinks):
+    def Full(self, entries):
       drinkers = set()
-      for drink in drinks:
-        if drink.user and drink.user.username not in drinkers:
-          drinkers.add(drink.user.username)
+      for entry in entries:
+        if entry.user and entry.user.username not in drinkers:
+          drinkers.add(entry.user.username)
       return list(drinkers)
-    def Incremental(self, drink, previous):
-      if drink.user and drink.user.username not in previous:
-        previous.append(drink.user.username)
+    def Incremental(self, entry, previous):
+      if entry.user and entry.user.username not in previous:
+        previous.append(entry.user.username)
       return previous
 
 
@@ -219,7 +161,7 @@ class SystemStatsBuilder(BaseStatsBuilder):
   REVISION = 5
 
   def _AllDrinks(self):
-    qs = self._drink.site.drinks.valid().filter(seqn__lte=self._drink.seqn)
+    qs = self._entry.site.entries.valid().filter(seqn__lte=self._entry.seqn)
     qs = qs.order_by('seqn')
     return qs
 
@@ -230,7 +172,7 @@ class DrinkerStatsBuilder(SystemStatsBuilder):
 
   def _AllDrinks(self):
     qs = SystemStatsBuilder._AllDrinks(self)
-    qs = qs.filter(user=self._drink.user)
+    qs = qs.filter(user=self._entry.user)
     return qs
 
 
@@ -240,7 +182,7 @@ class KegStatsBuilder(SystemStatsBuilder):
 
   def _AllDrinks(self):
     qs = SystemStatsBuilder._AllDrinks(self)
-    qs = qs.filter(keg=self._drink.keg)
+    qs = qs.filter(keg=self._entry.keg)
     return qs
 
 
@@ -250,14 +192,14 @@ class SessionStatsBuilder(SystemStatsBuilder):
 
   def _AllDrinks(self):
     qs = SystemStatsBuilder._AllDrinks(self)
-    qs = qs.filter(session=self._drink.session)
+    qs = qs.filter(session=self._entry.session)
     return qs
 
 
 def main():
   from pygate.core import models
-  last_drink = models.Drink.objects.valid().order_by('-seqn')[0]
-  builder = KegStatsBuilder(last_drink)
+  last_entry = models.Entry.objects.valid().order_by('-seqn')[0]
+  builder = KegStatsBuilder(last_entry)
 
   print "building..."
   stats = builder.Build()
@@ -266,12 +208,12 @@ def main():
 
   if False:
     for user in models.User.objects.all():
-      last_drink = user.drinks.valid().order_by('-starttime')
-      if not last_drink:
+      last_entry = user.entries.valid().order_by('-starttime')
+      if not last_entry:
         continue
-      last_drink = last_drink[0]
+      last_entry = last_entry[0]
       builder = DrinkerStatsBuilder()
-      stats = builder.Build(last_drink)
+      stats = builder.Build(last_entry)
       print '-'*72
       print 'stats for %s' % user
       for k, v in stats.iteritems():

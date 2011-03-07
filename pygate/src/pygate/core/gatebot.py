@@ -127,6 +127,9 @@ class GatebotEnv(object):
   def GetGateManager(self):
     return self._gate_manager
 
+  def GetLatchManager(self):
+    return self.latch_manager
+
   def GetAuthenticationManager(self):
     return self._authentication_manager
 
