@@ -221,12 +221,6 @@ class GatenetClient(GatenetProtocolHandler):
     message.request = message.Action.CLOSE_LATCH
     return self.SendMessage(message)
 
-  def SendThermoUpdate(self, sensor_name, sensor_value):
-    message = kbevent.ThermoEvent()
-    message.sensor_name = sensor_name
-    message.sensor_value = sensor_value
-    return self.SendMessage(message)
-
   def SendAuthTokenAdd(self, gate_name, auth_device_name, token_value):
     message = kbevent.TokenAuthEvent()
     message.gate_name = gate_name

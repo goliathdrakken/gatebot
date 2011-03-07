@@ -46,8 +46,8 @@ class GatebotTestCase(TestCase):
     self.test_user_2 = self.backend.CreateNewUser('tester_2')
     self.test_token_2 = self.backend.CreateAuthToken('rfid',
         '1243136425', 'tester_2')
-    kb_common.AUTH_TOKEN_MAX_IDLE['core.onewire'] = 2
-    kb_common.AUTH_TOKEN_MAX_IDLE['rfid'] = 2
+    kb_common.AUTH_DEVICE_MAX_IDLE_SECS['core.onewire'] = 2
+    kb_common.AUTH_DEVICE_MAX_IDLE_SECS['rfid'] = 2
 
     # Kill the gatebot latch processing thread so we can single step it.
     self.service_thread = self.env._service_thread
@@ -72,13 +72,13 @@ class GatebotTestCase(TestCase):
 
   def testSimpleFlow(self):
     gate_name = self.test_gate.name
-    self.client.SendLatchStart(gate_name)
+    self.client.SendOpenLatch(gate_name)
 
-    self.client.SendLatchStop(gate_name)
+    self.client.SendCloseLatch(gate_name)
     self.service_thread._FlushEvents()
 
-    drinks = self.test_keg.entries.valid()
-    self.assertEquals(len(drinks), 1)
+    entries = models.Entry.objects.all()
+    self.assertEquals(len(entries), 1)
     last_entry = entries[0]
 
     LOGGER.info('last entry: %s' % (last_entry,))
