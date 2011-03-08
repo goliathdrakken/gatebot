@@ -181,6 +181,10 @@ class GateboardDeviceIoThread(util.GatebotThread):
     ping_message = gateboard.PingCommand()
     self._reader.WriteMessage(ping_message)
 
+  def Output(self):
+    output_message = gateboard.OutputCommand()
+    self._reader.WriteMessage(output_message)
+
   def _MainLoop(self):
     self._logger.info('Starting reader loop...')
 
