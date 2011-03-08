@@ -27,6 +27,16 @@ admin.site.register(models.UserProfile)
 
 admin.site.register(models.GatebotSite)
 
+class GateAdmin(admin.ModelAdmin):
+  list_display = ('name', 'description')
+admin.site.register(models.Gate, GateAdmin)
+
+class EntryAdmin(admin.ModelAdmin):
+  list_display = ('seqn', 'user', 'starttime')
+  list_filter = ('status', 'starttime')
+  search_fields = ('seqn', 'user__username')
+admin.site.register(models.Entry, EntryAdmin)
+
 class AuthenticationTokenAdmin(admin.ModelAdmin):
   list_display = ('auth_device', 'user', 'token_value', 'nice_name', 'enabled', 'IsActive')
   list_filter = ('auth_device', 'enabled')
