@@ -287,7 +287,7 @@ class SystemStats(_StatsModel):
 
 
 class UserStats(_StatsModel):
-  STATS_BUILDER = stats.DrinkerStatsBuilder
+  STATS_BUILDER = stats.UserStatsBuilder
   user = models.ForeignKey(User, unique=True, related_name='stats')
 
   def __str__(self):
@@ -300,11 +300,7 @@ class SystemEvent(models.Model):
     get_latest_by = 'when'
 
   KINDS = (
-      ('drink_poured', 'Drink poured'),
-      ('session_started', 'Session started'),
-      ('session_joined', 'User joined session'),
-      ('keg_tapped', 'Keg tapped'),
-      ('keg_ended', 'Keg ended'),
+      ('entry', 'Entry confirmed'),
   )
 
   site = models.ForeignKey(GatebotSite, related_name='events')
@@ -315,20 +311,13 @@ class SystemEvent(models.Model):
   user = models.ForeignKey(User, blank=True, null=True,
       related_name='events',
       help_text='User responsible for the event, if any.')
+  entry = models.ForeignKey(Entry, blank=True, null=True,
+      related_name='events',
+      help_text='Entry involved in the event, if any.')
 
   def __str__(self):
-    if self.kind == 'drink_poured':
-      ret = 'Drink %i poured' % self.drink.seqn
-    elif self.kind == 'session_started':
-      ret = 'Session %i started by drink %i' % (self.session.seqn,
-          self.drink.seqn)
-    elif self.kind == 'session_joined':
-      ret = 'Session %i joined by %s (drink %i)' % (self.session.seqn,
-          self.user.username, self.drink.seqn)
-    elif self.kind == 'keg_tapped':
-      ret = 'Keg %i tapped' % self.keg.seqn
-    elif self.kind == 'keg_ended':
-      ret = 'Keg %i ended' % self.keg.seqn
+    if self.kind == 'entry':
+      ret = 'Entry %i confirmed' % self.entry.seqn
     else:
       ret = 'Unknown event type (%s)' % self.kind
     return 'Event %i: %s' % (self.seqn, ret)
@@ -355,10 +344,10 @@ class SystemEvent(models.Model):
     site = entry.site
     user = entry.user
 
-    q = entry.events.filter(kind='drink_poured')
+    q = entry.events.filter(kind='entry')
     if q.count() == 0:
-      e = entry.events.create(site=site, kind='drink_poured',
-          when=entry.starttime, entry=entry, user=user, keg=keg)
+      e = entry.events.create(site=site, kind='entry',
+          when=entry.starttime, entry=entry, user=user)
       e.save()
 
 pre_save.connect(_set_seqn_pre_save, sender=SystemEvent)

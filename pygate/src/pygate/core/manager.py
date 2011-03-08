@@ -30,6 +30,17 @@ from pygate.core import kbevent
 from pygate.core import util
 
 
+
+class GateManagerError(Exception):
+  """ Generic GateManager error """
+
+class AlreadyRegisteredError(GateManagerError):
+  """ Raised when attempting to register an already-registered name """
+
+class UnknownGateError(GateManagerError):
+  """ Raised when gate requested does not exist """
+
+
 def EventHandler(event_type):
   def decorate(f):
     if not hasattr(f, 'events'):
@@ -350,7 +361,6 @@ class EntryManager(Manager):
     Manager.__init__(self, name, event_hub)
     self._backend = backend
     self._last_entry = None
-    self._logger.debug('EntryManager started')
 
   def GetStatus(self):
     ret = []
@@ -360,7 +370,6 @@ class EntryManager(Manager):
   @EventHandler(kbevent.LatchUpdate)
   def HandleLatchUpdateEvent(self, event):
     """Attempt to save an entry record and derived data for |latch|"""
-    self._logger.debug('Latch update event: latch_id=0x%08x' % event.latch_id)
     if event.state == event.LatchState.COMPLETED:
       self._HandleLatchEnded(event)
 

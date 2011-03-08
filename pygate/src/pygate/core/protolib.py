@@ -67,6 +67,23 @@ def AuthTokenToProto(record, full=False):
       ret.pin = record.pin
   return ret
 
+@converts(models.Entry)
+def EntryToProto(entry, full=False):
+  ret = AttrDict()
+  ret.id = entry.seqn
+  ret.pour_time = entry.starttime
+  if entry.duration is not None:
+    ret.duration = entry.duration
+  ret.status = entry.status
+  ret.is_valid = (entry.status == 'valid')
+  if entry.user:
+    ret.user_id = entry.user.username
+  else:
+    ret.user_id = None
+  if entry.auth_token:
+    ret.auth_token = entry.auth_token
+  return ret
+
 @converts(models.Gate)
 def GateToProto(gate, full=False):
   ret = AttrDict()

@@ -44,7 +44,7 @@ class StatsBuilder:
       self._logger.debug('invalidating: older revision')
       self._previous = {}
 
-  def _AllDrinks(self):
+  def _AllEntries(self):
     raise NotImplementedError
 
   def _AllStats(self):
@@ -53,7 +53,7 @@ class StatsBuilder:
         yield (cls.STAT_NAME, cls)
 
   def Build(self):
-    entries = self._AllDrinks()
+    entries = self._AllEntries()
     result = copy.deepcopy(self._previous)
     for statname, cls in self._AllStats():
       o = cls()
@@ -81,59 +81,59 @@ class Stat:
 class BaseStatsBuilder(StatsBuilder):
   """Builder which generates a variety of stats from object information."""
 
-  class TotalPours(Stat):
+  class TotalEntries(Stat):
     STAT_NAME = 'total_count'
     def Full(self, entries):
       return entries.count()
     def Incremental(self, entry, previous):
       return previous + 1
 
-  class VolumeByDayOfweek(Stat):
-    STAT_NAME = 'volume_by_day_of_week'
+  class EntriesByDayOfweek(Stat):
+    STAT_NAME = 'entry_by_day_of_week'
     def Full(self, entries):
       # Note: uses the session's starttime, rather than the drink's. This causes
       # late-night sessions to be reported for the day on which they were
       # started.
-      volmap = dict((str(i), 0) for i in xrange(7))
+      entrymap = dict((str(i), 0) for i in xrange(7))
       for entry in entries:
         weekday = str(entry.starttime.weekday())
-        volmap[weekday] += entry.volume_ml
-      return volmap
+        entrymap[weekday] += 1
+      return entrymap
     def Incremental(self, entry, previous):
       weekday = str(entry.starttime.weekday())
-      previous[weekday] += entry.volume_ml
+      previous[weekday] += 1
       return previous
 
-  class VolumeByDrinker(Stat):
-    STAT_NAME = 'volume_by_drinker'
+  class EntryByUser(Stat):
+    STAT_NAME = 'entry_by_user'
     def Full(self, entries):
-      volmap = {}
+      entrymap = {}
       for entry in entries:
         if entry.user:
           u = entry.user.username
         else:
           u = None
-        volmap[u] = volmap.get(u, 0) + entry.volume_ml
-      return volmap
+        entrymap[u] = entrymap.get(u, 0) + 1
+      return entrymap
     def Incremental(self, entry, previous):
       if entry.user:
         u = entry.user.username
       else:
         u = None
-      previous[u] = previous.get(u, 0) + entry.volume_ml
+      previous[u] = previous.get(u, 0) + 1
       return previous
 
-  class Drinkers(Stat):
-    STAT_NAME = 'drinkers'
+  class Users(Stat):
+    STAT_NAME = 'users'
     def Full(self, entries):
-      drinkers = set()
+      users = set()
       for entry in entries:
         u = None
         if entry.user:
           u = entry.user.username
-        if u not in drinkers:
-          drinkers.add(u)
-      return list(drinkers)
+        if u not in users:
+          users.add(u)
+      return list(users)
     def Incremental(self, entry, previous):
       u = None
       if entry.user:
@@ -142,14 +142,14 @@ class BaseStatsBuilder(StatsBuilder):
         previous.append(u)
       return previous
 
-  class RegisteredDrinkers(Stat):
-    STAT_NAME = 'registered_drinkers'
+  class RegisteredUsers(Stat):
+    STAT_NAME = 'registered_users'
     def Full(self, entries):
-      drinkers = set()
+      users = set()
       for entry in entries:
-        if entry.user and entry.user.username not in drinkers:
-          drinkers.add(entry.user.username)
-      return list(drinkers)
+        if entry.user and entry.user.username not in users:
+          users.add(entry.user.username)
+      return list(users)
     def Incremental(self, entry, previous):
       if entry.user and entry.user.username not in previous:
         previous.append(entry.user.username)
@@ -158,20 +158,20 @@ class BaseStatsBuilder(StatsBuilder):
 
 class SystemStatsBuilder(BaseStatsBuilder):
   """Builder of systemwide stats by drink."""
-  REVISION = 5
+  REVISION = 1
 
-  def _AllDrinks(self):
+  def _AllEntries(self):
     qs = self._entry.site.entries.valid().filter(seqn__lte=self._entry.seqn)
     qs = qs.order_by('seqn')
     return qs
 
 
-class DrinkerStatsBuilder(SystemStatsBuilder):
+class UserStatsBuilder(SystemStatsBuilder):
   """Builder of user-specific stats by drink."""
-  REVISION = 5
+  REVISION = 1
 
-  def _AllDrinks(self):
-    qs = SystemStatsBuilder._AllDrinks(self)
+  def _AllEntries(self):
+    qs = SystemStatsBuilder._AllEntries(self)
     qs = qs.filter(user=self._entry.user)
     return qs
 
