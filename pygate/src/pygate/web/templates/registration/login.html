@@ -3,13 +3,6 @@
 
 {% block title %}keg {{ keg.seqn }}{% endblock %}
 
-{% block kb-extrajs %}
-   {% if USE_FACEBOOK %}
-   {% load facebook_tags %}
-   {% facebook_js %}
-   {% endif %}
-{% endblock %}
-
 {% block col-1 %}
 <div class="kb-contentbox-head">
    account
@@ -40,25 +33,5 @@
 {% endblock col-1 %}
 
 {% block col-2 %}
-
-  {% if USE_FACEBOOK %}
-  <div class="kb-contentbox-head">
-    login using facebook
-  </div>
-  <div class="kb-contentbox">
-    {% facebook_button %}
-  </div>
-  <p/>
-  {% endif %}
-
-  {% if USE_TWITTER %}
-  <div class="kb-contentbox-head">
-    login using twitter
-  </div>
-  <div class="kb-contentbox">
-    {% load twitter_tags %}
-    {% twitter_button %}
-  </div>
-  {% endif %}
 
 {% endblock %}

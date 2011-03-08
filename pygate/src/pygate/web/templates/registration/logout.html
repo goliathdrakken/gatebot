@@ -3,13 +3,6 @@
 
 {% block title %}keg {{ keg.seqn }}{% endblock %}
 
-{% block kb-extrajs %}
-   {% if USE_FACEBOOK %}
-   {% load facebook_tags %}
-   {% facebook_js %}
-   {% endif %}
-{% endblock %}
-
 {% block content %}
 <div class="kb-contentbox-head">
    logged out

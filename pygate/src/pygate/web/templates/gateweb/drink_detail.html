@@ -1,12 +1,12 @@
 {% extends "page-twocol.html" %}
 {% load kegweblib %}
 
-{% block title %}drink {{ drink.seqn }} by {{ drink.user.username }}{% endblock %}
+{% block title %}drink {{ entry.seqn }} by {{ entry.user.username }}{% endblock %}
 
 {% block col-1 %}
 
 <div class="kb-contentbox-head">
-   drink {{ drink.seqn }}{% if drink.user %} by {{ drink.user.username }}{% endif %}
+   drink {{ entry.seqn }}{% if entry.user %} by {{ entry.user.username }}{% endif %}
 </div>
 <div class="kb-contentbox">
    <table class="kb-statstable">
@@ -18,14 +18,14 @@
          <th valign="top">When</th>
          <td>
           {% timeago drink.starttime %}<br>
-          (took {{drink.PourDuration.seconds}} second{{drink.PourDuration.seconds|pluralize}} to pour)
+          (took {{entry.PourDuration.seconds}} second{{entry.PourDuration.seconds|pluralize}} to pour)
          </td>
       </tr>
       {% if drink.keg %}
       <tr>
          <th>Keg</th>
          <td>
-          <a href="{% url keg drink.keg.seqn %}">{{drink.keg.type.name}}</a>
+          <a href="{% url keg entry.keg.seqn %}">{{entry.keg.type.name}}</a>
         </td>
       </tr>
       {% endif %}

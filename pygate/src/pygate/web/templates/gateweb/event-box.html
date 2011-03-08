@@ -1,18 +1,7 @@
 {% spaceless %}
-{% if event.kind == "drink_poured" %}
-  {% with event.drink as drink %}
-    {% include "kegweb/drink-box.html" %}
+{% if event.kind == "entry" %}
+  {% with event.entry as entry %}
+    {% include "gateweb/drink-box.html" %}
   {% endwith %}
-{% endif %}
-{% if event.kind == "keg_tapped" %}
-  {% include "kegweb/event-box-keg-tapped.html" %}
-{% endif %}
-{% if event.kind == "keg_ended" %}
-  {% include "kegweb/event-box-keg-ended.html" %}
-{% endif %}
-{% if event.kind == "session_started" %}
-{% endif %}
-{% if event.kind == "session_joined" %}
-  {% include "kegweb/event-box-session-joined.html" %}
 {% endif %}
 {% endspaceless %}

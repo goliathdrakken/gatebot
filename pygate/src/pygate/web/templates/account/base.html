@@ -15,18 +15,6 @@
       <a href="{% url account-mugshot %}">mugshot</a>
     </div>
 
-    {% if USE_FACEBOOK %}
-    <div class="kb-admin-nav-tab" url="{% url fb-account-settings %}">
-      <a href="{% url fb-account-settings %}">facebook options</a>
-    </div>
-    {% endif %}
-
-    {% if USE_TWITTER %}
-    <div class="kb-admin-nav-tab" url="{% url twitter-account-settings %}">
-      <a href="{% url twitter-account-settings %}">twitter options</a>
-    </div>
-    {% endif %}
-
     <script>
     $("div.kb-admin-nav-tab").click(
     function()
