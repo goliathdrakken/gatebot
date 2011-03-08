@@ -17,7 +17,7 @@
   {% for tap in taps %}
     {% if tap.current_keg %}
       {% with tap.current_keg as keg %}
-        {% include "kegweb/keg-snapshot.html" %}
+        {% include "gateweb/keg-snapshot.html" %}
       {% endwith %}
     {% endif %}
   {% endfor %}

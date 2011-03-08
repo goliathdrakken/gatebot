@@ -46,12 +46,12 @@ from pygate.web.gateweb import view_util
 def index(request):
   context = RequestContext(request)
   try:
-    page = kegweb_models.Page.objects.get(name__exact='MainPage',
+    page = gateweb_models.Page.objects.get(name__exact='MainPage',
                                           status__exact='published')
-  except kegweb_models.Page.DoesNotExist:
+  except gateweb_models.Page.DoesNotExist:
     page = None
   context['page_node'] = page
-  context['taps'] = request.kbsite.taps.all()
+  context['taps'] = request.kbsite.gates.all()
   return render_to_response('index.html', context)
 
 @cache_page(30)
@@ -66,7 +66,7 @@ def system_stats(request):
   context['stats'] = stats
 
   top_drinkers = []
-  for username, vol in stats.get('volume_by_drinker', {}).iteritems():
+  for username, vol in stats.get('entry_by_user', {}).iteritems():
     username = str(username)
     vol = float(vol)
     try:
@@ -107,19 +107,6 @@ def user_detail_by_id(request, user_id):
     raise Http404
   return redirect_to(request, url='/drinker/'+user.username)
 
-def keg_list(request):
-  all_kegs = request.kbsite.kegs.all().order_by('-id')
-  return object_list(request,
-      queryset=all_kegs,
-      template_object_name='keg',
-      template_name='gateweb/keg_list.html')
-
-@cache_page(30)
-def keg_detail(request, keg_id):
-  keg = get_object_or_404(models.Keg, site=request.kbsite, seqn=keg_id)
-  context = RequestContext(request, {'keg': keg, 'stats': keg.GetStats()})
-  return render_to_response('gateweb/keg_detail.html', context)
-
 def drink_list(request):
   all_drinks = request.kbsite.drinks.valid()
   return object_list(request,
@@ -156,11 +143,4 @@ def claim_token(request):
   context = RequestContext(request)
   context['form'] = form
   return render_to_response('gateweb/claim_token.html', context)
-
-def session_detail(request, year, month, day, seqn, slug):
-  session = get_object_or_404(models.DrinkingSession, site=request.kbsite, seqn=seqn)
-  context = RequestContext(request)
-  context['session'] = session
-  return render_to_response('gateweb/session_detail.html', context)
-
 

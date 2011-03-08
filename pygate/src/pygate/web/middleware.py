@@ -6,4 +6,4 @@ class KegbotSiteMiddleware:
       sitename = 'default'
       if 'site' in request.GET:
         sitename = request.GET['site']
-      request.kbsite = models.KegbotSite.objects.get(name=sitename)
+      request.kbsite = models.GatebotSite.objects.get(name=sitename)

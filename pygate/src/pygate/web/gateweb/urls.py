@@ -18,12 +18,6 @@ urlpatterns = patterns('pygate.web.gateweb.views',
       (r'^stats/$', 'system_stats'),
       (r'^leaders/$', 'redirect_to', {'url': '/stats/'}),
 
-      ### keg related
-      (r'^kegs/$', 'keg_list'),
-      url(r'^kegs/(?P<keg_id>\d+)', 'keg_detail', name='keg'),
-      # redirects to the above for compatibility
-      (r'^keg/(?P<keg_id>\d+)', 'redirect_to', {'url': '/kegs/%(keg_id)s'}),
-
       ### drinkers
       (r'^drinkers/$', 'user_list'),
       url(r'^drinkers/(?P<username>\w+)', 'user_detail', name='drinker'),
@@ -38,10 +32,6 @@ urlpatterns = patterns('pygate.web.gateweb.views',
       # redirects to the above for compatibility
       (r'^drink/(?P<drink_id>\d+)', 'redirect_to', {'url': '/drinks/%(drink_id)s'}),
       (r'^d/(?P<drink_id>\d+)', 'redirect_to', {'url': '/drinks/%(drink_id)s'}),
-
-      ### sessions
-      url(r'^session/(?P<year>\d{4})-(?P<month>\d{1,2})-(?P<day>\d{1,2})/(?P<seqn>\d+)/(?P<slug>[-\w]+)',
-          'session_detail', name='session_detail')
 
 )
 
