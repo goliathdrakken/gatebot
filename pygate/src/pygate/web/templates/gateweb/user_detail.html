@@ -25,7 +25,7 @@
           {{ user.entries.valid.0.starttime|date:"l, F j, Y" }}<br>
           <i>({% timeago user.entries.valid.0.starttime%})</i>
         </td>
-     </tr>
+     </tr>ke
      {% endif %}
   </table>
 </div>
@@ -53,14 +53,6 @@
 <div class="kb-main-content">
   <div class="kb-contentbox-head">
      all sessions
-  </div>
-  <div class="kb-contentbox">
-    {% comment %} TODO(mikey): Pagniate sessions. {% endcomment %}
-    {% for chunk in user.user_session_chunks.all %}
-      {% with chunk.session as session %}
-        {% include "kegweb/keg-session.html" %}
-      {% endwith %}
-    {% endfor %}
   </div>
 </div>
 {% endblock %}
