@@ -4,13 +4,13 @@
 {% block title %}user details for {{ user.username }}{% endblock %}
 
 {% block pagetitle %}
-  drinker overview: {{ user.username }}
+  user overview: {{ user.username }}
 {% endblock %}
 
 {% block col-1 %}
 <div class="kb-contentbox">
   <div style="float:left;">
-    {% mugshot_box drinker 128 %}
+    {% mugshot_box user 128 %}
   </div>
   <table border="0" class="kb-statstable">
      <tr>
@@ -20,12 +20,12 @@
 
      {% if user.entries.valid.count %}
      <tr>
-        <td align="right" valign="top"><b>Last Drink</b></td>
+        <td align="right" valign="top"><b>Last Entry</b></td>
         <td align="left">
           {{ user.entries.valid.0.starttime|date:"l, F j, Y" }}<br>
           <i>({% timeago user.entries.valid.0.starttime%})</i>
         </td>
-     </tr>ke
+     </tr>
      {% endif %}
   </table>
 </div>
@@ -37,15 +37,7 @@
   stats
 </div>
 <div class="kb-contentbox">
-  <p>
-    <b>total pints, by day of week</b><br>
-    {% chart sessions_weekday drinker 350 100 %}
-  </p>
 
-  <p>
-    <b>all sessions, by pints per session</b><br>
-    {% chart sessions_volume drinker.user_session_chunks.all 350 100 %}
-  </p>
 </div>
 {% endblock %}
 

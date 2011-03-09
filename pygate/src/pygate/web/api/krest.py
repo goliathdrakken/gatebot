@@ -220,40 +220,28 @@ class KrestClient:
       # WTF?
       raise ValueError('Invalid response from server: missing result or error')
 
-  def RecordDrink(self, tap_name, ticks, volume_ml=None, username=None,
-      pour_time=None, duration=0, auth_token=None, spilled=False):
-    endpoint = '/tap/%s' % tap_name
+  def RecordEntry(self, gate_name, username=None, pour_time=None,
+      duration=0, auth_token=None):
+    endpoint = '/gate/%s' % gate_name
     post_data = {
-      'tap_name': tap_name,
-      'ticks': ticks,
-      'volume_ml': volume_ml,
+      'gate_name': gate_name,
       'username': username,
       'auth_token': auth_token,
       'duration': duration,
-      'spilled': spilled,
     }
     if pour_time:
       post_data['pour_time'] = int(pour_time.strftime('%s'))
       post_data['now'] = int(datetime.datetime.now().strftime('%s'))
     return self.DoPOST(endpoint, post_data=post_data)
 
-  def CancelDrink(self, seqn, spilled=False):
-    endpoint = '/cancel-drink'
+  def CancelEntry(self, seqn):
+    endpoint = '/cancel-entry'
     post_data = {
       'id': seqn,
-      'spilled': spilled,
     }
     return self.DoPOST(endpoint, post_data=post_data)
 
-  def LogSensorReading(self, sensor_name, temperature, when=None):
-    endpoint = '/thermo-sensor/%s' % (sensor_name,)
-    post_data = {
-      'temp_c': float(temperature),
-    }
-    # TODO(mikey): include post data
-    return self.DoPOST(endpoint, post_data=post_data)
-
-  def TapStatus(self):
+  def GateStatus(self):
     """Gets the status of all taps."""
     return self.DoGET('tap')
 
@@ -264,13 +252,13 @@ class KrestClient:
     except ServerError, e:
       raise NotFoundError(e)
 
-  def LastDrinks(self):
+  def LastEntry(self):
     """Gets a list of the most recent drinks."""
-    return self.DoGET('last-drinks')
+    return self.DoGET('last-entries')
 
-  def AllDrinks(self):
-    """Gets a list of all drinks."""
-    return self.DoGET('drink')
+  def AllEntries(self):
+    """Gets a list of all entries."""
+    return self.DoGET('entry')
 
   def AllSoundEvents(self):
     """Gets a list of all drinks."""
@@ -281,16 +269,16 @@ def main():
   c = KrestClient()
 
   print '== record a drink =='
-  print c.RecordDrink('kegboard.flow0', 2200)
+  print c.RecordEntry('kegboard.flow0')
   print ''
 
   print '== tap status =='
-  for t in c.TapStatus():
+  for t in c.GateStatus():
     print t
     print ''
 
   print '== last drinks =='
-  for d in c.LastDrinks():
+  for d in c.LastEntries():
     print d
     print ''
 

@@ -18,21 +18,17 @@
 
 from django import forms
 
-class DrinkPostForm(forms.Form):
+class EntryPostForm(forms.Form):
   """Form to handle posts to /tap/<tap_id>/"""
-  ticks = forms.IntegerField()
-  volume_ml = forms.FloatField(required=False)
   username = forms.CharField(required=False)
   pour_time = forms.IntegerField(required=False)
   now = forms.IntegerField(required=False)
   duration = forms.IntegerField(required=False)
   auth_token = forms.CharField(required=False)
-  spilled = forms.BooleanField(required=False)
 
-class CancelDrinkForm(forms.Form):
+class CancelEntryForm(forms.Form):
   """Form to handled posts to /cancel-drink/"""
   id = forms.IntegerField()
-  spilled = forms.BooleanField(required=False)
 
 class ThermoPostForm(forms.Form):
   """Handles posting new temperature sensor readings."""

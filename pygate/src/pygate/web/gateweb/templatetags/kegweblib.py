@@ -39,7 +39,7 @@ register = Library()
 def mugshot_box(user, boxsize=100):
   if user:
     img_url = user.get_profile().MugshotUrl()
-    user_url = urlresolvers.reverse('drinker', args=(user.username,))
+    user_url = urlresolvers.reverse('user', args=(user.username,))
   else:
     img_url = urlresolvers.reverse('site-media',
         args=('images/unknown-drinker.png',))

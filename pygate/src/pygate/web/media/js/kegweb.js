@@ -19,30 +19,30 @@
  */
 
 //
-// Kegweb namespace setup
+// gateweb namespace setup
 //
 
-var kegweb = {};
+var gateweb = {};
 
 // API Endpoints.
-kegweb.API_BASE = '/api/';
-kegweb.API_GET_EVENTS = 'event/';
-kegweb.API_GET_EVENTS_HTML = 'event/html/';
+gateweb.API_BASE = '/api/';
+gateweb.API_GET_EVENTS = 'event/';
+gateweb.API_GET_EVENTS_HTML = 'event/html/';
 
 // Misc globals.
-kegweb.lastEventId = -1;
-kegweb.eventsLoaded = false;
+gateweb.lastEventId = -1;
+gateweb.eventsLoaded = false;
 
 //
-// Kegweb functions.
+// gateweb functions.
 //
 
 /**
- * Based Kegweb onRead function, called when any kegweb page is loaded.
+ * Based gateweb onReady function, called when any gateweb page is loaded.
  */
-kegweb.onReady = function() {
-  kegweb.refreshCallback();
-  setInterval(kegweb.refreshCallback, 10000);
+gateweb.onReady = function() {
+  gateweb.refreshCallback();
+  setInterval(gateweb.refreshCallback, 10000);
 };
 
 /**
@@ -51,8 +51,8 @@ kegweb.onReady = function() {
  * @param {function(Array)} callback A callback function to process the events.
  * @param {number} since Fetch only events that are newer than this event id.
  */
-kegweb.getEventsHtml = function(callback, since) {
-  var url = kegweb.API_BASE + kegweb.API_GET_EVENTS_HTML;
+gateweb.getEventsHtml = function(callback, since) {
+  var url = gateweb.API_BASE + gateweb.API_GET_EVENTS_HTML;
   if (since) {
     url += '?since=' + since;
   }
@@ -66,13 +66,13 @@ kegweb.getEventsHtml = function(callback, since) {
 /**
  * Interval callback that will refresh all items on the page.
  */
-kegweb.refreshCallback = function() {
+gateweb.refreshCallback = function() {
   // Events table.
   if ($("#kb-recent-events")) {
-    if (kegweb.lastEventId >= 0) {
-      kegweb.getEventsHtml(kegweb.updateEventsTable, kegweb.lastEventId);
+    if (gateweb.lastEventId >= 0) {
+      gateweb.getEventsHtml(gateweb.updateEventsTable, gateweb.lastEventId);
     } else {
-      kegweb.getEventsHtml(kegweb.updateEventsTable);
+      gateweb.getEventsHtml(gateweb.updateEventsTable);
     }
   }
 }
@@ -80,13 +80,13 @@ kegweb.refreshCallback = function() {
 /**
  * Updates the kb-recent-events table from a list of events.
  */
-kegweb.updateEventsTable = function(events) {
+gateweb.updateEventsTable = function(events) {
   for (var rowId in events) {
     var row = events[rowId];
-    var animate = kegweb.eventsLoaded;
+    var animate = gateweb.eventsLoaded;
     var eid = row['id'];
-    if (eid > kegweb.lastEventId) {
-      kegweb.lastEventId = eid;
+    if (eid > gateweb.lastEventId) {
+      gateweb.lastEventId = eid;
     }
 
     var newDivName = 'kb-event-' + row['id'];
@@ -104,7 +104,7 @@ kegweb.updateEventsTable = function(events) {
       });
     }
   }
-  if (!kegweb.eventsLoaded) {
-    kegweb.eventsLoaded = true;
+  if (!gateweb.eventsLoaded) {
+    gateweb.eventsLoaded = true;
   }
 }

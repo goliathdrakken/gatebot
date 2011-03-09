@@ -130,8 +130,8 @@ def py_to_json(f):
 
 ### Helpers
 
-def _get_last_drinks(request, limit=5):
-  return request.kbsite.drinks.valid()[:limit]
+def _get_last_entries(request, limit=5):
+  return request.kbsite.entries.valid()[:limit]
 
 def _form_errors(form):
   ret = {}
@@ -146,24 +146,16 @@ def _form_errors(form):
 ### Endpoints
 
 @py_to_json
-def last_drinks(request, limit=5):
-  drinks = _get_last_drinks(request, limit)
+def last_entries(request, limit=5):
+  entries = _get_last_entries(request, limit)
   res = {
-    'drinks': obj_to_dict(drinks),
+    'entries': obj_to_dict(entries),
   }
   return res
 
 @py_to_json
-def all_kegs(request):
-  kegs = request.kbsite.kegs.all().order_by('-startdate')
-  res = {
-    'kegs': obj_to_dict(kegs),
-  }
-  return res
-
-@py_to_json
-def all_drinks(request, limit=100):
-  qs = request.kbsite.drinks.valid()
+def all_entries(request, limit=100):
+  qs = request.kbsite.entries.valid()
   total = len(qs)
   if 'start' in request.GET:
     try:
@@ -176,7 +168,7 @@ def all_drinks(request, limit=100):
   start = qs[0].seqn
   count = len(qs)
   res = {
-    'drinks' : obj_to_dict(qs),
+    'entries' : obj_to_dict(qs),
   }
   if count < total:
     res['paging'] = {
@@ -187,63 +179,11 @@ def all_drinks(request, limit=100):
   return res
 
 @py_to_json
-def get_drink(request, drink_id):
-  drink = get_object_or_404(models.Drink, seqn=drink_id, site=request.kbsite)
+def get_entry(request, entry_id):
+  entry = get_object_or_404(models.Entry, seqn=entry_id, site=request.kbsite)
   res = {
-    'drink': obj_to_dict(drink),
-    'user': obj_to_dict(drink.user),
-    'keg': obj_to_dict(drink.keg),
-    'session': obj_to_dict(drink.session),
-  }
-  return res
-
-@py_to_json
-def get_session(request, session_id):
-  session = get_object_or_404(models.DrinkingSession, seqn=session_id,
-      site=request.kbsite)
-  res = {
-    'session': obj_to_dict(session),
-    'stats': session.GetStats(),
-    'kegs': obj_to_dict(c.keg for c in session.keg_chunks.all() if c.keg),
-  }
-  return res
-
-@py_to_json
-def get_keg(request, keg_id):
-  keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
-  sessions = (c.session for c in keg.keg_session_chunks.all())
-
-  res = {
-    'keg': obj_to_dict(keg),
-    'type': obj_to_dict(keg.type),
-    'size': obj_to_dict(keg.size),
-    'drinks': obj_to_dict(keg.drinks.valid()),
-    'sessions': obj_to_dict(sessions),
-    # TODO(mikey): add sessions
-  }
-  return res
-
-@py_to_json
-def get_keg_drinks(request, keg_id):
-  keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
-  res = {
-    'drinks': obj_to_dict(keg.drinks.valid()),
-  }
-  return res
-
-@py_to_json
-def get_keg_events(request, keg_id):
-  keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
-  res = {
-    'events': obj_to_dict(keg.events.all()),
-  }
-  return res
-
-@py_to_json
-def all_sessions(request):
-  sessions = request.kbsite.sessions.all()
-  res = {
-    'sessions': obj_to_dict(sessions),
+    'entry': obj_to_dict(entry),
+    'user': obj_to_dict(entry.user),
   }
   return res
 
@@ -290,30 +230,15 @@ def recent_events_html(request):
   return res
 
 @py_to_json
-def get_keg_sessions(request, keg_id):
-  keg = get_object_or_404(models.Keg, seqn=keg_id, site=request.kbsite)
-  sessions = [c.session for c in keg.keg_session_chunks.all()]
-  res = {
-    'sessions': obj_to_dict(sessions),
-  }
-  return res
-
-@py_to_json
-def all_taps(request):
-  taps = request.kbsite.taps.all().order_by('name')
-  tap_list = []
-  for tap in taps:
-    beer_type = None
-    tap_entry = {
-      'tap': obj_to_dict(tap),
-      'keg': obj_to_dict(tap.current_keg),
+def all_gates(request):
+  gates = request.kbsite.gates.all().order_by('name')
+  gate_list = []
+  for gate in gates:
+    gate_entry = {
+      'gate': obj_to_dict(gate),
     }
-    if tap.current_keg and tap.current_keg.type:
-      tap_entry['beverage'] = obj_to_dict(tap.current_keg.type)
-    else:
-      tap_entry['beverage'] = None
-    tap_list.append(tap_entry)
-  res = {'taps': tap_list}
+    gate_list.append(gate_entry)
+  res = {'gates': gate_list}
   return res
 
 @py_to_json
@@ -325,11 +250,11 @@ def get_user(request, username):
   return res
 
 @py_to_json
-def get_user_drinks(request, username):
+def get_user_entries(request, username):
   user = get_object_or_404(models.User, username=username)
-  drinks = user.drinks.valid()
+  entries = user.entries.valid()
   res = {
-    'drinks': obj_to_dict(drinks),
+    'entries': obj_to_dict(entries),
   }
   return res
 
@@ -425,22 +350,22 @@ def get_thermo_sensor_logs(request, sensor_name):
   return res
 
 @py_to_json
-def last_drinks_html(request, limit=5):
-  last_drinks = _get_last_drinks(request, limit)
+def last_entries_html(request, limit=5):
+  last_entries = _get_last_entries(request, limit)
 
-  # render each drink
+  # render each entry
   template = get_template('gateweb/drink-box.html')
   results = []
-  for d in last_drinks:
+  for d in last_entries:
     row = {}
     row['id'] = d.id
-    row['box_html'] = template.render(Context({'drink': d}))
+    row['box_html'] = template.render(Context({'entry': d}))
     results.append(row)
   return results
 
 @py_to_json
-def last_drink_id(request):
-  last = _get_last_drinks(request, limit=1)
+def last_entry_id(request):
+  last = _get_last_entries(request, limit=1)
   if not last.count():
     return {'id': 0}
   else:
@@ -451,25 +376,24 @@ def last_drink_id(request):
 def get_access_token(request):
   return {'token': AUTH_KEY}
 
-def tap_detail(request, tap_id):
+def gate_detail(request, gate_id):
   if request.method == 'POST':
-    return tap_detail_post(request, tap_id)
+    return gate_detail_post(request, gate_id)
   else:
-    return tap_detail_get(request, tap_id)
+    return gate_detail_get(request, gate_id)
 
 @py_to_json
-def tap_detail_get(request, tap_id):
-  tap = get_object_or_404(models.Gate, meter_name=tap_id, site=request.kbsite)
-  tap_entry = {
-    'tap': obj_to_dict(tap),
-    'keg': obj_to_dict(tap.current_keg),
+def gate_detail_get(request, gate_id):
+  gate = get_object_or_404(models.Gate, meter_name=gate_id, site=request.kbsite)
+  gate_entry = {
+    'gate': obj_to_dict(tap),
   }
   return tap_entry
 
 @py_to_json
 @auth_required
-def tap_detail_post(request, tap):
-  form = forms.DrinkPostForm(request.POST)
+def gate_detail_post(request, gate):
+  form = forms.EntryPostForm(request.POST)
   if not form.is_valid():
     raise krest.BadRequestError, _form_errors(form)
   cd = form.cleaned_data
@@ -483,33 +407,30 @@ def tap_detail_post(request, tap):
   duration = cd.get('duration')
   if duration is None:
     duration = 0
-  b = backend.KegbotBackend(site=request.kbsite)
+  b = backend.GatebotBackend(site=request.kbsite)
   try:
-    res = b.RecordDrink(tap_name=tap,
-      ticks=cd['ticks'],
-      volume_ml=cd.get('volume_ml'),
+    res = b.RecordEntry(gate_name=gate,
       username=cd.get('username'),
       pour_time=pour_time,
       duration=duration,
-      auth_token=cd.get('auth_token'),
-      spilled=cd.get('spilled'))
+      auth_token=cd.get('auth_token'))
     return res
   except backend.BackendError, e:
     raise krest.ServerError(str(e))
 
 @py_to_json
 @auth_required
-def cancel_drink(request):
+def cancel_entry(request):
   #if request.method != 'POST':
   #  raise krest.BadRequestError, 'Method not supported at this endpoint'
   #form = forms.DrinkCancelForm(request.POST)
-  form = forms.CancelDrinkForm(request.GET)
+  form = forms.CancelEntryForm(request.GET)
   if not form.is_valid():
     raise krest.BadRequestError, _form_errors(form)
   cd = form.cleaned_data
-  b = backend.KegbotBackend(site=request.kbsite)
+  b = backend.GatebotBackend(site=request.kbsite)
   try:
-    res = b.CancelDrink(seqn=cd.get('id'), spilled=cd.get('spilled', False))
+    res = b.CancelEntry(seqn=cd.get('id'))
     return res
   except backend.BackendError, e:
     raise krest.ServerError(str(e))
