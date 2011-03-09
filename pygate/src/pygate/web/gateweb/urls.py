@@ -19,19 +19,19 @@ urlpatterns = patterns('pygate.web.gateweb.views',
       (r'^leaders/$', 'redirect_to', {'url': '/stats/'}),
 
       ### drinkers
-      (r'^drinkers/$', 'user_list'),
-      url(r'^drinkers/(?P<username>\w+)', 'user_detail', name='drinker'),
+      (r'^users/$', 'user_list'),
+      url(r'^users/(?P<username>\w+)', 'user_detail', name='user'),
       (r'^drinkers/(?P<user_id>\d+)', 'user_detail_by_id'),
       # redirects to the above for compatibility
-      (r'^drinker/(?P<user_id>\d+)', 'redirect_to', {'url': '/drinkers/%(user_id)s'}),
-      (r'^drinker/(?P<username>\w+)', 'redirect_to', {'url': '/drinkers/%(username)s'}),
+      (r'^user/(?P<user_id>\d+)', 'redirect_to', {'url': '/users/%(user_id)s'}),
+      (r'^user/(?P<username>\w+)', 'redirect_to', {'url': '/users/%(username)s'}),
 
       ### drink related
-      (r'^drinks/$', 'drink_list'),
-      url(r'^drinks/(?P<drink_id>\d+)', 'drink_detail', name='drink'),
+      (r'^entries/$', 'entry_list'),
+      url(r'^entries/(?P<entry_id>\d+)', 'entry_detail', name='entry'),
       # redirects to the above for compatibility
-      (r'^drink/(?P<drink_id>\d+)', 'redirect_to', {'url': '/drinks/%(drink_id)s'}),
-      (r'^d/(?P<drink_id>\d+)', 'redirect_to', {'url': '/drinks/%(drink_id)s'}),
+      (r'^entry/(?P<entry_id>\d+)', 'redirect_to', {'url': '/entries/%(entry_id)s'}),
+      (r'^d/(?P<entry_id>\d+)', 'redirect_to', {'url': '/entries/%(entry_id)s'}),
 
 )
 

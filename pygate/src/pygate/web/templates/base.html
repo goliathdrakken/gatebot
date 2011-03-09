@@ -4,7 +4,7 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-  <title>kegbot :: {% block title %}Default Page{% endblock %}</title>
+  <title>gatebot :: {% block title %}Default Page{% endblock %}</title>
   <link rel="stylesheet" href="/site_media/style.css" />
   {% if kbsite %}
   {% if kbsite.background_image %}
@@ -51,11 +51,11 @@
         </div>
 
         <div class="kb-header-link">
-          <a href="/kegs">kegs</a>
+          <a href="/users">users</a>
         </div>
 
         <div class="kb-header-link">
-          <a href="/stats">all-time stats</a>
+          <a href="/stats">stats</a>
         </div>
 
         {% if user.is_authenticated %}
@@ -65,7 +65,7 @@
 
         {% if user.is_staff %}
         <div class="kb-header-link">
-          <a href="{% url kegadmin-main %}">keg admin</a>
+          <a href="{% url kegadmin-main %}">gate admin</a>
         </div>
         {% endif %}
 
@@ -96,7 +96,7 @@
 
     {% block header-margin %}
     <div id="kb-pagetitle">
-      <h1>{% block pagetitle %}kegbot{% endblock %}</h1>
+      <h1>{% block pagetitle %}gatebot{% endblock %}</h1>
     </div>
     {% endblock %}
 
@@ -117,8 +117,8 @@
     </div> <!-- kb-main-container -->
 
     <div id="kb-footer">
-      this is <a href="http://kegbot.org/">kegbot</a>:
-      &copy; 2004-{% now "Y" %} mike wakerly<br>
+      this is <a href="http://gatebot.org/">gatebot/a>:
+      &copy; 2004-{% now "Y" %} jared szechy<br>
       charts by <a href="http://highcharts.com/">highcharts</a>
     </div>
 

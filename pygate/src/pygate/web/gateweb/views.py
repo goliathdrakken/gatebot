@@ -88,8 +88,8 @@ def user_list(request):
   user_list = models.User.objects.all()
   return object_list(request,
       queryset=user_list,
-      template_object_name='drinker',
-      template_name='gateweb/drinker_list.html')
+      template_object_name='user',
+      template_name='gateweb/user_list.html')
 
 def user_detail(request, username):
   user = get_object_or_404(models.User, username=username)
@@ -97,27 +97,27 @@ def user_detail(request, username):
 
   context = RequestContext(request, {
       'stats': stats,
-      'drinker': user})
-  return render_to_response('gateweb/drinker_detail.html', context)
+      'user': user})
+  return render_to_response('gateweb/user_detail.html', context)
 
 def user_detail_by_id(request, user_id):
   try:
     user = models.User.objects.get(pk=user_id)
   except models.User.DoesNotExist:
     raise Http404
-  return redirect_to(request, url='/drinker/'+user.username)
+  return redirect_to(request, url='/user/'+user.username)
 
-def drink_list(request):
-  all_drinks = request.kbsite.drinks.valid()
+def entry_list(request):
+  all_entries = request.kbsite.entries.valid()
   return object_list(request,
-      queryset=all_drinks,
-      template_name='gateweb/drink_list.html',
-      template_object_name='drink')
+      queryset=all_entries,
+      template_name='gateweb/entry_list.html',
+      template_object_name='entry')
 
-def drink_detail(request, drink_id):
-  drink = get_object_or_404(models.Drink, site=request.kbsite, seqn=drink_id)
-  context = RequestContext(request, {'drink': drink})
-  return render_to_response('gateweb/drink_detail.html', context)
+def entry_detail(request, entry_id):
+  entry = get_object_or_404(models.Entry, site=request.kbsite, seqn=entry_id)
+  context = RequestContext(request, {'entry': entry})
+  return render_to_response('gateweb/entrydr_detail.html', context)
 
 ### auth
 
