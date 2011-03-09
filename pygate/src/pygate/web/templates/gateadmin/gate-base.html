@@ -1,15 +1,15 @@
-{% extends "kegadmin/base.html" %}
+{% extends "gateadmin/base.html" %}
 {% load kegweblib %}
 
-{% block title %}tap admin{% endblock %}
+{% block title %}gate admin{% endblock %}
 
-{% block kegadmin-tap-subnav %}
+{% block gateadmin-tap-subnav %}
 <div class="kb-admin-subnav">
-  {% for tap in taps %}
+  {% for gate in gates %}
   {% spaceless %}
-  <div class="kb-admin-subnav-tap" url="{% url kegadmin-edit-tap tap.seqn %}">
+  <div class="kb-admin-subnav-tap" url="{% url gateadmin-edit-gate gate.seqn %}">
     <p>
-      <a href="{% url kegadmin-edit-tap tap.seqn %}">{{ tap.name }}</a>
+      <a href="{% url gateadmin-edit-gate gate.seqn %}">{{ gate.name }}</a>
     </p>
     <p>
     {% if tap.current_keg %}
@@ -31,6 +31,6 @@ function()
 });
 </script>
 
-{% endblock kegadmin-tap-subnav %}
+{% endblock gateadmin-tap-subnav %}
 
-{% block kegadmin-main %}{% endblock %}
+{% block gateadmin-main %}{% endblock %}

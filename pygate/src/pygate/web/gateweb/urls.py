@@ -21,7 +21,7 @@ urlpatterns = patterns('pygate.web.gateweb.views',
       ### drinkers
       (r'^users/$', 'user_list'),
       url(r'^users/(?P<username>\w+)', 'user_detail', name='user'),
-      (r'^drinkers/(?P<user_id>\d+)', 'user_detail_by_id'),
+      (r'^users/(?P<user_id>\d+)', 'user_detail_by_id'),
       # redirects to the above for compatibility
       (r'^user/(?P<user_id>\d+)', 'redirect_to', {'url': '/users/%(user_id)s'}),
       (r'^user/(?P<username>\w+)', 'redirect_to', {'url': '/users/%(username)s'}),

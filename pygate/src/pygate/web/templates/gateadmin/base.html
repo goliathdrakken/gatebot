@@ -1,18 +1,18 @@
 {% extends "base.html" %}
 
-{% block title %}kegbot admin{% endblock %}
+{% block title %}gatebot admin{% endblock %}
 
-{% block pagetitle %}keg admin{% endblock %}
+{% block pagetitle %}gate admin{% endblock %}
 
 {% block content %}
 <div class="kb-contentbox">
   <div id="kb-admin-nav">
-    <div class="kb-admin-nav-tab" url="{% url kegadmin-main %}">
-      <a href="{% url kegadmin-main %}">kegadmin main</a>
+    <div class="kb-admin-nav-tab" url="{% url gateadmin-main %}">
+      <a href="{% url gateadmin-main %}">gateadmin main</a>
     </div>
 
-    <div class="kb-admin-nav-tab" url="{% url kegadmin-tap-list %}">
-      <a href="{% url kegadmin-tap-list %}">taps</a>
+    <div class="kb-admin-nav-tab" url="{% url gateadmin-gate-list %}">
+      <a href="{% url gateadmin-gate-list %}">gates</a>
     </div>
 
     <div class="kb-admin-subnav">
