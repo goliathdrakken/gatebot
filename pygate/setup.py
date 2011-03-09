@@ -42,7 +42,8 @@ setup(
       'django-registration',
       'django_extensions',
 
-      #'MySQL-python',
+      'MySQL-python',
+      'pil',
       'pylcdui >= 0.5.5',
       'python-gflags >= 1.3',
       'South >= 0.7.3',
@@ -50,6 +51,9 @@ setup(
       'django_nose',
       'tweepy',
       'pytz',
+    ],
+    dependency_links = [
+        'http://dist.repoze.org/PIL-1.1.6.tar.gz',
     ],
     include_package_data = True,
 
