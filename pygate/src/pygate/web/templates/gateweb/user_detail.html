@@ -1,10 +1,10 @@
 {% extends "page-twocol.html" %}
 {% load kegweblib %}
 
-{% block title %}drinker details for {{ drinker.username }}{% endblock %}
+{% block title %}user details for {{ user.username }}{% endblock %}
 
 {% block pagetitle %}
-  drinker overview: {{ drinker.username }}
+  drinker overview: {{ user.username }}
 {% endblock %}
 
 {% block col-1 %}
@@ -14,39 +14,19 @@
   </div>
   <table border="0" class="kb-statstable">
      <tr>
-       <td valign="top" align="right">
-         <b>Total Sessions</b>
-       </td>
-       <td>
-         {{ drinker.user_session_chunks.all.count }}
-       </td>
+        <td align="right" valign="top"><b>Total Entries</b></td>
+        <td align="left">{{ user.entries.valid.count }}</td>
      </tr>
 
-     <tr>
-        <td align="right" valign="top"><b>Total Drinks</b></td>
-        <td align="left">{{ drinker.drinks.valid.count }}</td>
-     </tr>
-
-     {% if drinker.drinks.valid.count %}
+     {% if user.entries.valid.count %}
      <tr>
         <td align="right" valign="top"><b>Last Drink</b></td>
         <td align="left">
-          {{ drinker.drinks.valid.0.starttime|date:"l, F j, Y" }}<br>
-          <i>({% timeago drinker.drinks.valid.0.starttime%})</i>
+          {{ user.entries.valid.0.starttime|date:"l, F j, Y" }}<br>
+          <i>({% timeago user.entries.valid.0.starttime%})</i>
         </td>
      </tr>
      {% endif %}
-
-     <tr>
-        <td align="right" valign="top"><b>Total Volume</b></td>
-        <td align="left">
-         {{ stats.total_volume|volume:"ounces"|floatformat:1}} ounces<br>
-         = {{ stats.total_volume|volume:"twelveounces"|floatformat:0}} 12-oz bottles<br>
-         = {{ stats.total_volume|volume:"pints"|floatformat:0}} pints<br>
-         = {{ stats.total_volume|volume:"gallons"|floatformat:1}} gallons<br>
-         = {{ stats.total_volume|volume:"halfbarrels"|floatformat:1}} kegs<br>
-        </td>
-     </tr>
   </table>
 </div>
 

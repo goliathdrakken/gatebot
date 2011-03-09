@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}all drinkers{% endblock %}
+{% block title %}all users{% endblock %}
 
 {% block content %}
 <div class="content">
    <ul>
-      {% for drinker in drinker_list %}
-      <li> {{ drinker }}
+      {% for user in user_list %}
+      <li> {{ user }}
       {% endfor %}
    </ul>
 </div>
